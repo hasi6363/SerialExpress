@@ -1,0 +1,115 @@
+﻿<Window
+    x:Class="SerialExpress.View.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:SerialExpress.View"
+    xmlns:vm="clr-namespace:SerialExpress.ViewModel"
+    xmlns:cv="clr-namespace:SerialExpress.Converter"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+    mc:Ignorable="d"
+    Title="MainWindow"
+    FontFamily="Consolas"
+    FontSize="15"
+    Height="450"
+    Width="800"
+    Loaded="Window_Loaded">
+    <Window.CommandBindings>
+        <CommandBinding
+            Command="ApplicationCommands.New"
+            Executed="New_Executed"
+            CanExecute="New_CanExecute" />
+        <CommandBinding
+            Command="ApplicationCommands.Open"
+            Executed="Open_Executed"
+            CanExecute="Open_CanExecute" />
+        <CommandBinding
+            Command="ApplicationCommands.Save"
+            Executed="Save_Executed"
+            CanExecute="Save_CanExecute" />
+        <CommandBinding
+            Command="ApplicationCommands.SaveAs"
+            Executed="SaveAs_Executed"
+            CanExecute="SaveAs_CanExecute" />
+        <CommandBinding
+            Command="ApplicationCommands.Close"
+            Executed="Close_Executed"
+            CanExecute="Close_CanExecute" />
+        <CommandBinding
+            Command="ApplicationCommands.Copy"
+            Executed="Copy_Executed"
+            CanExecute="Copy_CanExecute" />
+    </Window.CommandBindings>
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition
+                Height="Auto" />
+            <RowDefinition
+                Height="*" />
+            <RowDefinition
+                Height="Auto" />
+        </Grid.RowDefinitions>
+        <Menu>
+            <MenuItem
+                Header="File">
+                <MenuItem
+                    Header="New"
+                    Command="ApplicationCommands.New"/>
+                <MenuItem
+                    Header="Save"
+                    Command="ApplicationCommands.Save"/>
+                <MenuItem
+                    Header="SaveAs"
+                    Command="ApplicationCommands.SaveAs"/>
+                <MenuItem
+                    Header="Close"
+                    Command="ApplicationCommands.Close"/>
+            </MenuItem>
+            <MenuItem
+                Header="Terminal">
+                <MenuItem
+                    Header="Settings"
+                    Command="ApplicationCommands.Open" />
+                <MenuItem
+                    Header="Clear"
+                    Command="{Binding Path=ClearTerminal}" />
+            </MenuItem>
+            <MenuItem
+                Header="Help">
+                <MenuItem
+                    Header="About" />
+            </MenuItem>
+        </Menu>
+        <Grid
+            Name="MainFrame"
+            Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
+                    Width="2*" />
+                <ColumnDefinition
+                    Width="auto" />
+                <ColumnDefinition
+                    Width="1*" />
+            </Grid.ColumnDefinitions>
+            <local:TerminalView 
+                Grid.Column =" 0"
+                x:Name="TerminalView"/>
+            <GridSplitter
+                Grid.Column="1"
+                Width="4"
+                HorizontalAlignment="Stretch" />
+            <local:CommandView
+                Grid.Column="2"
+                x:Name="CommandView"/>
+        </Grid>
+        <StatusBar
+            Grid.Row="2">
+            <StatusBarItem
+                Content="{Binding Path=StatusBarText}" />
+        </StatusBar>
+    </Grid>
+</Window>

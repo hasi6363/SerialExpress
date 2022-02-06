@@ -1,0 +1,130 @@
+﻿<UserControl x:Class="SerialExpress.View.TerminalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SerialExpress.View"
+             xmlns:cv="clr-namespace:SerialExpress.Converter"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <cv:BytesToHexStringConverter
+            x:Key="BytesToHexStringConverter" />
+    </UserControl.Resources>
+    <Grid
+        IsEnabled="{Binding Path=SerialPortManager.IsOpened}">
+        <Grid.RowDefinitions>
+            <RowDefinition
+                Height="*" />
+            <RowDefinition
+                Height="auto" />
+            <RowDefinition
+                Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            Name="RxTerminalFrame">
+            <Grid.RowDefinitions>
+                <RowDefinition
+                    Height="*" />
+                <RowDefinition
+                    Height="auto" />
+            </Grid.RowDefinitions>
+            <ListView
+                Name="RxTerminalListView"
+                ItemsSource="{Binding Path=RxTerminalManager.DataList, Mode=OneWay, NotifyOnTargetUpdated=True}"
+                TargetUpdated="TerminalListView_TargetUpdated">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn
+                            Header="Time"
+                            DisplayMemberBinding="{Binding Path=Time, StringFormat=HH:mm:ss.fff}" />
+                        <GridViewColumn
+                            Header="Text"
+                            DisplayMemberBinding="{Binding Path=Text}"
+                            Width="300"/>
+                        <GridViewColumn
+                            Header="Binary"
+                            DisplayMemberBinding="{Binding Path=Data, Converter={StaticResource BytesToHexStringConverter} }"
+                            Width="300" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <TextBox
+                Name="ReceivedData"
+                Text="{Binding Path=ReceivedTempData, Mode=OneWay}"
+                IsReadOnly="true"
+                Grid.Row="1" />
+        </Grid>
+        <GridSplitter
+            Grid.Row="1"
+            Height="4"
+            VerticalAlignment="Stretch" />
+        <Grid
+            Name="TxTerminalFrame"
+            Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition
+                    Height="*" />
+                <RowDefinition
+                    Height="auto" />
+            </Grid.RowDefinitions>
+            <ListView
+                Grid.Row="0"
+                Name="TxTerminalListView"
+                ItemsSource="{Binding Path=TxTerminalManager.DataList, Mode=OneWay, NotifyOnTargetUpdated=True}"
+                TargetUpdated="TerminalListView_TargetUpdated">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn
+                            Header="Time"
+                            DisplayMemberBinding="{Binding Path=Time, StringFormat=HH:mm:ss.fff}" />
+                        <GridViewColumn
+                            Header="Text"
+                            DisplayMemberBinding="{Binding Path=Text}"
+                            Width="300"/>
+                        <GridViewColumn
+                            Header="Binary"
+                            DisplayMemberBinding="{Binding Path=Data, Converter={StaticResource BytesToHexStringConverter} }"
+                            Width="300" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Grid
+                Name="SendTextBoxWindow"
+                Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition
+                        Width="*" />
+                    <ColumnDefinition
+                        Width="auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Name="InputTextBox"
+                    Text="{Binding Path=InputText, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding
+                            Gesture="Enter"
+                            Command="{Binding Path=SendCommand}"
+                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}"
+                            Key="Return" />
+                        <KeyBinding
+                            Gesture="Up"
+                            Command="{Binding Path=GetPrevCommand}"
+                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
+                        <KeyBinding
+                            Gesture="Down"
+                            Command="{Binding Path=GetNextCommand}"
+                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button
+                    Grid.Column="1"
+                    Name="SendButton"
+                    Content="Send"
+                    Padding="16 0"
+                    Command="{Binding Path=SendCommand}"
+                    CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
