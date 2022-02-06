@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SerialExpress
+namespace SerialExpress.View
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
