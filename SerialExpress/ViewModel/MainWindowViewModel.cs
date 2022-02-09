@@ -55,6 +55,30 @@ namespace SerialExpress.ViewModel
                 }
             }
         }
+        public bool UseCommandPrefix
+        {
+            get
+            {
+                return CommandManager.UseCommandPrefix;
+            }
+            set
+            {
+                CommandManager.UseCommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string CommandPrefix
+        {
+            get
+            {
+                return CommandManager.CommandPrefix;
+            }
+            set
+            {
+                CommandManager.CommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
 
         private DispatcherTimer m_DataReceivedTimer;
 
