@@ -61,6 +61,10 @@
                         Width="auto" />
                     <ColumnDefinition
                         Width="*" />
+                    <ColumnDefinition
+                        Width="auto" />
+                    <ColumnDefinition
+                        Width="*" />
                 </Grid.ColumnDefinitions>
                 <CheckBox
                     Grid.Column="0"
@@ -74,6 +78,18 @@
                     Name="CommandPrefixTextBox"
                     Text="{Binding Path=CommandPrefix}"
                     IsEnabled="{Binding ElementName=CommandPrefixCheckBox, Path=IsChecked}"/>
+                <CheckBox
+                    Grid.Column="2"
+                    Content="Suffix"
+                    VerticalAlignment="Center"
+                    Name="CommandSuffixCheckBox"
+                    IsChecked="{Binding Path=UseCommandSuffix}" />
+                <TextBox
+                    Grid.Column="3"
+                    Margin="4"
+                    Name="CommandSuffixTextBox"
+                    Text="{Binding Path=CommandSuffix}"
+                    IsEnabled="{Binding ElementName=CommandSuffixCheckBox, Path=IsChecked}" />
             </Grid>
             <ListView
                 Grid.Row="3"

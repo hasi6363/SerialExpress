@@ -89,8 +89,10 @@ namespace SerialExpress.Model
         public ObservableCollection<FileTreeItem>? CommandFileTreeRoot { get; private set; } = null;
         public ObservableCollection<CommandItem> CommandList { get;private set; }
         private FileSystemWatcher mFileSystemWatcher;
-        public bool UseCommandPrefix { get; set; }
-        public string CommandPrefix { get; set; }
+        public bool UseCommandPrefix { get; set; } = false;
+        public string CommandPrefix { get; set; } = "";
+        public bool UseCommandSuffix { get; set; } = false;
+        public string CommandSuffix { get; set; } = "";
 
         public delegate void SendCommandEventDelegate(string command);
         public event SendCommandEventDelegate? SendCommandEvent = null;
@@ -167,7 +169,7 @@ namespace SerialExpress.Model
                     {
                         if(SendCommandEvent != null)
                         {
-                            SendCommandEvent((UseCommandPrefix ? CommandPrefix : "") + item.Command);
+                            SendCommandEvent((UseCommandPrefix ? CommandPrefix : "") + item.Command + (UseCommandSuffix ? CommandSuffix : ""));
                         }
                     }
                 },
