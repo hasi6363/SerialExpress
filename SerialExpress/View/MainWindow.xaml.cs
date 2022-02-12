@@ -103,44 +103,42 @@ namespace SerialExpress.View
         }
         private void Copy_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            StringBuilder sb = new StringBuilder(0x1000);
-            var view = this.FindName("TerminalView") as UserControl;
-            if (view != null)
+            if(sender is MainWindow mw)
             {
-                var tx_lv = view.FindName("TxTerminalListView") as ListView;
-                var rx_lv = view.FindName("RxTerminalListView") as ListView;
-                var vm = DataContext as MainWindowViewModel;
+                StringBuilder sb = new StringBuilder(0x1000);
+                ListView lv;
+                if(mw.TerminalView.TxTerminalListView.IsKeyboardFocusWithin)
+                {
+                    lv = mw.TerminalView.TxTerminalListView;
+                }
+                else if(mw.TerminalView.RxTerminalListView.IsKeyboardFocusWithin)
+                {
+                    lv = mw.TerminalView.RxTerminalListView;
+                }
+                else if(mw.CommandView.CommandListView.IsKeyboardFocusWithin)
+                {
+                    lv = mw.CommandView.CommandListView;
+                }
+                else
+                {
+                    return;
+                }
 
-                if (tx_lv != null && tx_lv.IsKeyboardFocusWithin)
+                var list = new List<object>();
+                foreach (object item in lv.SelectedItems)
                 {
-                    var list = new List<TerminalDataItem>();
-                    foreach (TerminalDataItem item in tx_lv.SelectedItems)
-                    {
-                        list.Add(item);
-                    }
-                    list = list.OrderBy(c => c.Time).ToList();
-                    foreach (TerminalDataItem item in list)
-                    {
-                        sb.AppendLine(item.ToString());
-                    }
+                    list.Add(item);
                 }
-                else if (rx_lv != null && rx_lv.IsKeyboardFocusWithin)
+                //ist = list.OrderBy(c => c.Time).ToList();
+                foreach (object item in list)
                 {
-                    var list = new List<TerminalDataItem>();
-                    foreach (TerminalDataItem item in rx_lv.SelectedItems)
-                    {
-                        list.Add(item);
-                    }
-                    list = list.OrderBy(c => c.Time).ToList();
-                    foreach (TerminalDataItem item in list)
-                    {
-                        sb.AppendLine(item.ToString());
-                    }
+                    sb.AppendLine(item.ToString());
                 }
-            }
-            if (sb.Length != 0)
-            {
-                Clipboard.SetText(sb.ToString());
+
+                if (sb.Length != 0)
+                {
+                    Clipboard.SetText(sb.ToString());
+                }
             }
         }
 
