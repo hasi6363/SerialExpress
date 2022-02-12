@@ -68,20 +68,124 @@ namespace SerialExpress.Model
             return collection;
         }
     }
-    public class CommandItem
+    public class CommandItem: BindableBase
     {
-        public int Index { get; }
-        public string Command { get; }
-        public string Description { get; }
+        public delegate void SaveEventDelegate();
+        public event SaveEventDelegate? SaveEvent = null;
+        public delegate void SendCommandEventDelegate(CommandItem item);
+        public event SendCommandEventDelegate? SendEvent = null;
+        public delegate void AddCommandItemEventDelegate();
+        public event AddCommandItemEventDelegate? AddEvent = null;
+        public delegate void InsertCommandItemEventDelegate(CommandItem selected_item);
+        public event InsertCommandItemEventDelegate? InsertEvent = null;
+        public DelegateCommand EditCommand { get; }
+        public DelegateCommand EditDescription { get; }
+        public DelegateCommand AddCommandItem { get; }
+        public DelegateCommand InsertCommandItem { get; }
+        private int m_Index;
+        public int Index
+        {
+            get { return m_Index; }
+            set
+            {
+                m_Index = value;
+                RaisePropertyChanged();
+            }
+        }
+        private string m_Command;
+        public string Command
+        {
+            get { return m_Command; }
+            set
+            {
+                m_Command = value;
+                RaisePropertyChanged();
+                SaveEvent?.Invoke();
+            }
+        }
+        private string m_Description;
+        public string Description
+        {
+            get { return m_Description; }
+            set
+            {
+                m_Description = value;
+                RaisePropertyChanged();
+                if (SaveEvent != null)
+                {
+                    SaveEvent();
+                }
+            }
+        }
+        private bool mCommandIsEditable = false;
+        public bool CommandIsEditable
+        {
+            get { return mCommandIsEditable; }
+            set
+            {
+                mCommandIsEditable = value;
+                RaisePropertyChanged();
+            }
+        }
+        private bool mDescriptionIsEditable = false;
+        public bool DescriptionIsEditable
+        {
+            get { return mDescriptionIsEditable; }
+            set
+            {
+                mDescriptionIsEditable = value;
+                RaisePropertyChanged();
+            }
+        }
         public CommandItem(int index, string command, string description)
         {
-            Index = index;
-            Command = command;
-            Description = description;
+            m_Index = index;
+            m_Command = command;
+            m_Description = description;
+            EditCommand = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    CommandIsEditable = true;
+                },
+                () =>
+                {
+                    return true;
+                });
+            EditDescription = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    DescriptionIsEditable = true;
+                },
+                () =>
+                {
+                    return true;
+                });
+            AddCommandItem = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    AddEvent?.Invoke();
+                },
+                () =>
+                {
+                    return true;
+                });
+            InsertCommandItem = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    InsertEvent?.Invoke(this);
+                },
+                () =>
+                {
+                    return true;
+                });
         }
         public override string ToString()
         {
             return Command;
+        }
+        public void Send()
+        {
+            SendEvent?.Invoke(this);
         }
     }
     public class CommandManager : BindableBase
@@ -93,10 +197,34 @@ namespace SerialExpress.Model
         public string CommandPrefix { get; set; } = "";
         public bool UseCommandSuffix { get; set; } = false;
         public string CommandSuffix { get; set; } = "";
+        public FileTreeItem? SelectedFileTreeItem { get; set; } = null;
+        private CommandItem? m_SelectedCommandListItem = null;
+        public CommandItem? SelectedCommandListItem
+        {
+            get { return m_SelectedCommandListItem; }
+            set
+            {
+                m_SelectedCommandListItem = value;
+                foreach(var cmd in CommandList)
+                {
+                    if (cmd.CommandIsEditable is true)
+                    {
+                        cmd.CommandIsEditable = false;
+                    }
+                    if (cmd.DescriptionIsEditable is true)
+                    {
+                        cmd.DescriptionIsEditable = false;
+                    }
+                }
+                RaisePropertyChanged();
+            }
+        }
 
         public delegate void SendCommandEventDelegate(string command);
         public event SendCommandEventDelegate? SendCommandEvent = null;
-        public DelegateCommand SelectedItemChanged { get; }
+        public DelegateCommand SelectedFileTreeItemChanged { get; }
+        public DelegateCommand AddCommandItem { get; }
+        public DelegateCommand AddFile { get; }
         public DelegateCommand EditFile { get; }
         public DelegateCommand SendCommand { get; }
         public CommandManager()
@@ -109,14 +237,61 @@ namespace SerialExpress.Model
             CommandList = new ObservableCollection<CommandItem>();
             BindingOperations.EnableCollectionSynchronization(CommandList, new object());
 
-            SelectedItemChanged = new DelegateCommand(
+            SelectedFileTreeItemChanged = new DelegateCommand(
                 (object? parameter) =>
                 {
-                    if (!(parameter is FileTreeItem)) return;
-                    var item = parameter as FileTreeItem;
-                    if(item != null)
+                    if (parameter is not FileTreeItem) return;
+                    SelectedFileTreeItem = parameter as FileTreeItem;
+                    if(SelectedFileTreeItem != null)
                     {
-                        LoadCommand(item.Path);
+                        LoadCommandList(SelectedFileTreeItem.Path);
+                    }
+                    RaisePropertyChanged(nameof(SelectedFileTreeItem));
+                },
+                () =>
+                {
+                    return true;
+                });
+            AddCommandItem = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    AddEmptyCommandItem();
+                    RaisePropertyChanged(nameof(CommandList));
+                },
+                () =>
+                {
+                    return true;
+                });
+            AddFile = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    var title = DateTime.Now.ToString("yyyyMMss_HHmmss") + "_untitled.txt";
+                    if (parameter is null)
+                    {
+                        if (SelectedFileTreeItem == null)
+                        {
+                            File.Create(Path.Combine(Properties.Resources.CommandDirName, title));
+                        }
+                        else
+                        {
+                            var dir = SelectedFileTreeItem.Info.Directory;
+                            if (dir != null)
+                            {
+                                File.Create(Path.Combine(dir.FullName, title));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        FileTreeItem? item = parameter as FileTreeItem;
+                        if (item != null)
+                        {
+                            var dir = item.Info.Directory;
+                            if (dir != null)
+                            {
+                                File.Create(Path.Combine(dir.FullName, title));
+                            }
+                        }
                     }
                 },
                 () =>
@@ -131,13 +306,20 @@ namespace SerialExpress.Model
                     {
                         // if parameter is null, open command directory
                         var proc = new System.Diagnostics.Process();
-                        proc.StartInfo.FileName = Properties.Resources.CommandDirName;
+                        if (SelectedFileTreeItem == null)
+                        {
+                            proc.StartInfo.FileName = Properties.Resources.CommandDirName;
+                        }
+                        else
+                        {
+                            proc.StartInfo.FileName = SelectedFileTreeItem.Path;
+                        }
                         proc.StartInfo.UseShellExecute = true;
                         proc.Start();
                     }
                     else
                     {
-                        if (!(parameter is FileTreeItem)) return;
+                        if (parameter is not FileTreeItem) return;
                         item = parameter as FileTreeItem;
                     }
 
@@ -167,10 +349,7 @@ namespace SerialExpress.Model
                     var item = parameter as CommandItem;
                     if (item != null)
                     {
-                        if(SendCommandEvent != null)
-                        {
-                            SendCommandEvent((UseCommandPrefix ? CommandPrefix : "") + item.Command + (UseCommandSuffix ? CommandSuffix : ""));
-                        }
+                        SendCommandFunc(item);
                     }
                 },
                 () =>
@@ -192,13 +371,23 @@ namespace SerialExpress.Model
             mFileSystemWatcher.IncludeSubdirectories = true;
             mFileSystemWatcher.EnableRaisingEvents = true;
         }
+        private void SendCommandFunc(CommandItem item)
+        {
+            if (SendCommandEvent != null)
+            {
+                SendCommandEvent((UseCommandPrefix ? CommandPrefix : "") + item.Command + (UseCommandSuffix ? CommandSuffix : ""));
+            }
+        }
         private void FileSystemWatcher_Changed(object source, FileSystemEventArgs e)
         {
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
                     Console.WriteLine(e.FullPath +" is changed.");
-                    LoadCommand(e.FullPath);
+                    if (SelectedFileTreeItem != null && Path.GetFullPath(e.FullPath) == SelectedFileTreeItem.Path)
+                    {
+                        LoadCommandList(e.FullPath);
+                    }
                     break;
                 case WatcherChangeTypes.Created:
                     Console.WriteLine(e.FullPath + " is created.");
@@ -218,9 +407,26 @@ namespace SerialExpress.Model
         private void RefreshComamndFileTree()
         {
             CommandFileTreeRoot = FileTreeItem.GetDirectoryAndFiles(Properties.Resources.CommandDirName);
-            RaisePropertyChanged("CommandFileTreeRoot");
+            RaisePropertyChanged(nameof(CommandFileTreeRoot));
         }
-        private void LoadCommand(string path)
+        private CommandItem CreateNewCommandItem(string command, string description)
+        {
+            var item = new CommandItem(CommandList.Count, command, description);
+            item.SendEvent += SendCommandFunc;
+            item.SaveEvent += SaveCommandList;
+            item.AddEvent += AddEmptyCommandItem;
+            item.InsertEvent += InsertCommandItem;
+            return item;
+        }
+        private void AddEmptyCommandItem()
+        {
+            AddCommandItemFunc("", "");
+        }
+        private void AddCommandItemFunc(string command, string description)
+        {
+            CommandList.Add(CreateNewCommandItem(command, description));
+        }
+        private void LoadCommandList(string path)
         {
             CommandList.Clear();
             try
@@ -234,11 +440,11 @@ namespace SerialExpress.Model
                         {
                             if (text.Length > 1)
                             {
-                                CommandList.Add(new CommandItem(CommandList.Count, text[0], text[1]));
+                                AddCommandItemFunc(text[0], text[1]);
                             }
                             else
                             {
-                                CommandList.Add(new CommandItem(CommandList.Count, text[0], ""));
+                                AddCommandItemFunc(text[0], "");
                             }
                         }
                     }
@@ -247,7 +453,37 @@ namespace SerialExpress.Model
             catch
             {
             }
-            RaisePropertyChanged("CommandList");
+            RaisePropertyChanged(nameof(CommandList));
+        }
+        private void SaveCommandList()
+        {
+            if(SelectedFileTreeItem != null)
+            {
+                using (var sw = new StreamWriter(new FileStream(SelectedFileTreeItem.Path, FileMode.Open, FileAccess.Write, FileShare.Read)))
+                {
+                    foreach (var cmd in CommandList)
+                    {
+                        sw.Write($"{cmd.Command}\t{cmd.Description}\r\n");
+                    }
+                    sw.Flush();
+                }
+            }
+        }
+        private void InsertCommandItem(CommandItem selected_item)
+        {
+            var new_item = CreateNewCommandItem("","");
+            var index = CommandList.IndexOf(selected_item);
+            CommandList.Insert(index, new_item);
+            UpdateCommandIndex();
+            SaveCommandList();
+            RaisePropertyChanged(nameof(CommandList));
+        }
+        private void UpdateCommandIndex()
+        {
+            foreach(var cmd in CommandList)
+            {
+                cmd.Index = CommandList.IndexOf(cmd);
+            }
         }
     }
 }
