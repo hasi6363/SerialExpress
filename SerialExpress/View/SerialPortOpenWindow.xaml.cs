@@ -35,9 +35,12 @@ namespace SerialExpress.View
                 vm.SerialPortManager.OpenCommand.Execute(vm.SerialPortManager);
                 if(vm.SerialPortManager.IsOpened)
                 {
+                    this.DialogResult = true;
                     this.Close();
+                    return;
                 }
             }
+            this.DialogResult = false;
         }
 
         private void Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -46,6 +49,7 @@ namespace SerialExpress.View
         }
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            this.DialogResult = false;
             this.Close();
         }
 

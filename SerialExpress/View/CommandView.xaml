@@ -97,24 +97,24 @@
                     Content="Prefix"
                     VerticalAlignment="Center"
                     Name="CommandPrefixCheckBox"
-                    IsChecked="{Binding Path=UseCommandPrefix}"/>
+                    IsChecked="{Binding Path=CommandManager.UseCommandPrefix}"/>
                 <TextBox
                     Grid.Column="1"
                     Margin="4"
                     Name="CommandPrefixTextBox"
-                    Text="{Binding Path=CommandPrefix}"
+                    Text="{Binding Path=CommandManager.CommandPrefix, UpdateSourceTrigger=PropertyChanged}"
                     IsEnabled="{Binding ElementName=CommandPrefixCheckBox, Path=IsChecked}"/>
                 <CheckBox
                     Grid.Column="2"
                     Content="Suffix"
                     VerticalAlignment="Center"
                     Name="CommandSuffixCheckBox"
-                    IsChecked="{Binding Path=UseCommandSuffix}" />
+                    IsChecked="{Binding Path=CommandManager.UseCommandSuffix}" />
                 <TextBox
                     Grid.Column="3"
                     Margin="4"
                     Name="CommandSuffixTextBox"
-                    Text="{Binding Path=CommandSuffix}"
+                    Text="{Binding Path=CommandManager.CommandSuffix, UpdateSourceTrigger=PropertyChanged}"
                     IsEnabled="{Binding ElementName=CommandSuffixCheckBox, Path=IsChecked}" />
             </Grid>
             <ListView

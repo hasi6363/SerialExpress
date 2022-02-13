@@ -94,6 +94,11 @@ namespace SerialExpress.View
         }
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            var vm = DataContext as MainWindowViewModel;
+            if (vm != null)
+            {
+                vm.StoreConfigurations();
+            }
             this.Close();
         }
 

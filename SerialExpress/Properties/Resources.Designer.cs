@@ -79,6 +79,15 @@ namespace SerialExpress.Properties {
         }
         
         /// <summary>
+        ///   config.json に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ConfigurationFileName {
+            get {
+                return ResourceManager.GetString("ConfigurationFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   The MIT License (MIT)
         ///
         ///Copyright (c) 2015 Microsoft

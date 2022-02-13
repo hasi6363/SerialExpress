@@ -59,12 +59,14 @@
                 <MenuItem
                     Header="New"
                     Command="ApplicationCommands.New"/>
+                    <!--
                 <MenuItem
                     Header="Save"
                     Command="ApplicationCommands.Save"/>
                 <MenuItem
                     Header="SaveAs"
                     Command="ApplicationCommands.SaveAs"/>
+                -->
                 <MenuItem
                     Header="Close"
                     Command="ApplicationCommands.Close"/>

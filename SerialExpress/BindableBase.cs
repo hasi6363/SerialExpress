@@ -18,38 +18,6 @@ namespace SerialExpress
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        public void SaveTo(string filename, object obj)
-        {
-            try
-            {
-                using (var sw = new StreamWriter(filename, false, Encoding.UTF8))
-                {
-                    sw.Write(Newtonsoft.Json.JsonConvert.SerializeObject(obj));
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        public object? LoadFrom(string filename, Type type)
-        {
-            object? obj = null;
-            try
-            {
-                using (var sr = new StreamReader(filename, Encoding.UTF8))
-                {
-                    string config = sr.ReadToEnd();
-                    obj = Newtonsoft.Json.JsonConvert.DeserializeObject(config, type);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
-            return obj;
-        }
     }
     public class DelegateCommand : ICommand
     {

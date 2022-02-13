@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
@@ -190,15 +191,55 @@ namespace SerialExpress.Model
     }
     public class CommandManager : BindableBase
     {
+        [JsonIgnore]
         public ObservableCollection<FileTreeItem>? CommandFileTreeRoot { get; private set; } = null;
+        [JsonIgnore]
         public ObservableCollection<CommandItem> CommandList { get;private set; }
         private FileSystemWatcher mFileSystemWatcher;
-        public bool UseCommandPrefix { get; set; } = false;
-        public string CommandPrefix { get; set; } = "";
-        public bool UseCommandSuffix { get; set; } = false;
-        public string CommandSuffix { get; set; } = "";
+        private bool mUseCommandPrefix = false;
+        private string mCommandPrefix = "";
+        private bool mUseCommandSuffix = false;
+        private string mCommandSuffix = "";
+        public bool UseCommandPrefix
+        {
+            get { return mUseCommandPrefix; }
+            set
+            {
+                mUseCommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string CommandPrefix
+        {
+            get { return mCommandPrefix; }
+            set
+            {
+                mCommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public bool UseCommandSuffix
+        {
+            get { return mUseCommandSuffix; }
+            set
+            {
+                mUseCommandSuffix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string CommandSuffix
+        {
+            get { return mCommandSuffix; }
+            set
+            {
+                mCommandSuffix = value;
+                RaisePropertyChanged();
+            }
+        }
+        [JsonIgnore]
         public FileTreeItem? SelectedFileTreeItem { get; set; } = null;
         private CommandItem? m_SelectedCommandListItem = null;
+        [JsonIgnore]
         public CommandItem? SelectedCommandListItem
         {
             get { return m_SelectedCommandListItem; }
@@ -222,10 +263,15 @@ namespace SerialExpress.Model
 
         public delegate void SendCommandEventDelegate(string command);
         public event SendCommandEventDelegate? SendCommandEvent = null;
+        [JsonIgnore]
         public DelegateCommand SelectedFileTreeItemChanged { get; }
+        [JsonIgnore]
         public DelegateCommand AddCommandItem { get; }
+        [JsonIgnore]
         public DelegateCommand AddFile { get; }
+        [JsonIgnore]
         public DelegateCommand EditFile { get; }
+        [JsonIgnore]
         public DelegateCommand SendCommand { get; }
         public CommandManager()
         {

@@ -18,7 +18,8 @@ using System.Windows.Threading;
 namespace SerialExpress.ViewModel
 {
     public class MainWindowViewModel : BindableBase
-    {
+    { 
+        public ConfigurationManager ConfigurationManager { get; }
         public RxTerminalManager RxTerminalManager { get; }
         public TxTerminalManager TxTerminalManager { get; }
         public SerialPortManager SerialPortManager { get; }
@@ -108,6 +109,7 @@ namespace SerialExpress.ViewModel
 
         public MainWindowViewModel()
         {
+            ConfigurationManager = new ConfigurationManager();
             RxTerminalManager = new RxTerminalManager();
             TxTerminalManager = new TxTerminalManager();
             SerialPortManager = new SerialPortManager();
@@ -212,12 +214,52 @@ namespace SerialExpress.ViewModel
         }
         public void ShowSerialPortOpenDialog()
         {
+            LoadConfigurations();
             var spw = new SerialPortOpenWindow(SerialPortManager, TxTerminalManager, RxTerminalManager);
-            spw.ShowDialog();
+            if (spw.ShowDialog() == true)
+            {
+                StoreConfigurations();
+            }
+        }
+        private void LoadConfigurations()
+        {
+            var config = ConfigurationManager.Load();
+
+            if (config != null)
+            {
+                try
+                {
+                    SerialPortManager.BaudRate = int.Parse(config.GetSection("SerialPort").GetSection("BaudRate").Value);
+                    SerialPortManager.DataBits = int.Parse(config.GetSection("SerialPort").GetSection("DataBits").Value);
+                    SerialPortManager.Parity = Enum.Parse<Parity>(config.GetSection("SerialPort").GetSection("Parity").Value);
+                    SerialPortManager.StopBits = Enum.Parse<StopBits>(config.GetSection("SerialPort").GetSection("StopBits").Value);
+                    TxTerminalManager.Token = Enum.Parse<TerminalManager.TokenType>(config.GetSection("TxTerminal").GetSection("Token").Value);
+                    RxTerminalManager.Token = Enum.Parse<TerminalManager.TokenType>(config.GetSection("RxTerminal").GetSection("Token").Value);
+                    CommandManager.UseCommandPrefix = bool.Parse(config.GetSection("Command").GetSection("UseCommandPrefix").Value);
+                    CommandManager.CommandPrefix = config.GetSection("Command").GetSection("CommandPrefix").Value;
+                    CommandManager.UseCommandSuffix = bool.Parse(config.GetSection("Command").GetSection("UseCommandSuffix").Value);
+                    CommandManager.CommandSuffix = config.GetSection("Command").GetSection("CommandSuffix").Value;
+                }
+                catch
+                {
+                    StoreConfigurations();
+                }
+            }
+        }
+        public void StoreConfigurations()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                ["SerialPort"] = SerialPortManager,
+                ["TxTerminal"] = TxTerminalManager,
+                ["RxTerminal"] = RxTerminalManager,
+                ["Command"] = CommandManager
+            };
+            ConfigurationManager.Save(dict);
         }
         public void Save()
         {
-
+            StoreConfigurations();
         }
         public void SaveAs()
         {
