@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,6 +67,28 @@ namespace SerialExpress.Model
             {
                 throw new ArgumentException();
             }
+        }
+        public void Save()
+        {
+            using var sw = new StreamWriter(Properties.Resources.CommandHistoryFileName, false, Encoding.UTF8);
+            foreach(var b in Buffer)
+            {
+                sw.WriteLine(b);
+            }
+            sw.Flush();
+        }
+        public void Load()
+        {
+            Clear();
+            using var sr = new StreamReader(new FileStream(Properties.Resources.CommandHistoryFileName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read), Encoding.UTF8);
+            do
+            {
+                var s = sr.ReadLine();
+                if (s != null)
+                {
+                    Buffer.Add((string)s);
+                }
+            } while (sr == null);
         }
     }
 }

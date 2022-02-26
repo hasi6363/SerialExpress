@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace SerialExpress.View
 {
@@ -23,11 +24,65 @@ namespace SerialExpress.View
     /// </summary>
     public partial class CommandView : UserControl
     {
+        private static readonly int ClickTimerThreshold = 500;
+        private MouseClickManager MouseClickManager;
+        private CommandItem? FirstClickItem = null;
         public CommandView()
         {
             InitializeComponent();
+            MouseClickManager = new MouseClickManager(ClickTimerThreshold, this.Dispatcher, MouseClickedEvent)
+            {
+                MaxCount = 2
+            };
         }
 
+        private void MouseClickedEvent(object? sender, object? parameter, int click_count, TimeSpan last_elapsed_time)
+        {
+            if(sender != null)
+            {
+                switch(click_count)
+                {
+                    case 1:
+                        {
+                            if (sender is TextBlock tb && tb.DataContext is CommandItem ci)
+                            {
+                                if (FirstClickItem == ci)
+                                {
+                                    if (tb.Name is "CommandTextBlock")
+                                    {
+                                        ci.CommandIsEditable = true;
+                                    }
+                                    else if (tb.Name is "DescriptionTextBlock")
+                                    {
+                                        ci.DescriptionIsEditable = true;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    case 2:
+                        {
+                            if (sender is ListViewItem lvi)
+                            {
+                                var item = (CommandItem)lvi.Content;
+                                if (item != null && !item.CommandIsEditable && !item.DescriptionIsEditable)
+                                {
+                                    item.Send();
+                                }
+                            }
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send command by Enter key
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CommandListView_KeyUp(object sender, KeyEventArgs e)
         {
             if(e.Key==Key.Enter)
@@ -41,6 +96,63 @@ namespace SerialExpress.View
                     {
                         vm.SendCommand.Execute(item.Command);
                     }
+                }
+            }
+        }
+
+        private void ListViewItem_MouseClickEvent(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                object? param = null;
+                if(sender is ListViewItem lvi)
+                {
+                    if(lvi.IsFocused == true)
+                    {
+                        FirstClickItem = lvi.DataContext as CommandItem;
+                    }
+                    else
+                    {
+                        FirstClickItem = null;
+                    }
+                }
+                MouseClickManager.UpdateClickCount(sender, e, param);
+            }
+        }
+
+        /// <summary>
+        /// Cancel select item by Clicking outside the area
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CommandListView_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender != null && sender is ListView)
+            {
+                var lv = (ListView)sender;
+                lv.SelectedItem = null;
+            }
+        }
+
+        private void TextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if(sender is TextBox tb)
+            {
+                tb.Focus();
+            }
+        }
+
+        private void TextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.DataContext is CommandItem ci)
+            {
+                if (tb.Name == "CommandTextBox")
+                {
+                    ci.CommandIsEditable = false;
+                }
+                else if (tb.Name is "DescriptionTextBox")
+                {
+                    ci.DescriptionIsEditable = false;
                 }
             }
         }

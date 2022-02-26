@@ -9,12 +9,13 @@
     xmlns:cv="clr-namespace:SerialExpress.Converter"
     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"
-    Title="MainWindow"
+    Title="{Binding Path=WindowTitle}"
     FontFamily="Consolas"
     FontSize="15"
     Height="450"
     Width="800"
-    Loaded="Window_Loaded">
+    Loaded="Window_Loaded"
+    Closed="Window_Closed">
     <Window.CommandBindings>
         <CommandBinding
             Command="ApplicationCommands.New"
@@ -59,12 +60,14 @@
                 <MenuItem
                     Header="New"
                     Command="ApplicationCommands.New"/>
+                    <!--
                 <MenuItem
                     Header="Save"
                     Command="ApplicationCommands.Save"/>
                 <MenuItem
                     Header="SaveAs"
                     Command="ApplicationCommands.SaveAs"/>
+                -->
                 <MenuItem
                     Header="Close"
                     Command="ApplicationCommands.Close"/>

@@ -1,4 +1,5 @@
-﻿using SerialExpress.ViewModel;
+﻿using Newtonsoft.Json;
+using SerialExpress.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -33,27 +34,36 @@ namespace SerialExpress.Model
                 return DeviceName;
             }
         }
-
+        [JsonIgnore]
         public SerialPort SerialPort { get; }
+        [JsonIgnore]
+        public ObservableCollection<PortNameType> PortNameList { get; }
+        [JsonIgnore]
+        public ObservableCollection<int> BaudRateList { get; }
+        [JsonIgnore]
+        public ObservableCollection<int> DataBitsList { get; }
+        [JsonIgnore]
+        public ObservableCollection<Parity> ParityList { get; }
+        [JsonIgnore]
+        public ObservableCollection<StopBits> StopBitsList { get; }
         public delegate void PortStatusChangedCallbackDelegete(SerialPort serial_port);
         public event PortStatusChangedCallbackDelegete? PortStatusChangedCallback = null;
-        public ObservableCollection<PortNameType> PortNameList { get; }
-        public ObservableCollection<int> BaudRateList { get; }
-        public ObservableCollection<int> DataBitsList { get; }
-        public ObservableCollection<Parity> ParityList { get; }
-        public ObservableCollection<StopBits> StopBitsList { get; }
+        
+        [JsonIgnore]
         public string PortName
         {
             get { return SerialPort.PortName; }
+        }
+        private PortNameType mSelectedPortName;
+        [JsonIgnore]
+        public PortNameType SelectedPortName
+        {
+            get { return mSelectedPortName; }
             set
             {
-                if (value == null)
-                {
-                    RaisePropertyChanged();
-                    return;
-                }
-                SerialPort.PortName = value;
+                mSelectedPortName = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(IsSelected));
             }
         }
         public int BaudRate
@@ -92,27 +102,26 @@ namespace SerialExpress.Model
                 RaisePropertyChanged();
             }
         }
-        private PortNameType mSelectedPortName;
 
-        public PortNameType SelectedPortName
-        {
-            get { return mSelectedPortName; }
-            set
-            {
-                mSelectedPortName = value;
-                RaisePropertyChanged();
-            }
-        }
+        [JsonIgnore]
         public bool IsOpened
         {
             get { return SerialPort.IsOpen; }
         }
+        [JsonIgnore]
         public bool IsClosed
         {
             get { return !SerialPort.IsOpen; }
         }
+        [JsonIgnore]
+        public bool IsSelected
+        {
+            get { return SelectedPortName.ComName != null && SelectedPortName.ComName != string.Empty; }
+        }
 
         private NextActionEnum mNextAction = NextActionEnum.Open;
+        
+        [JsonIgnore]
         public NextActionEnum NextAction
         {
             get { return mNextAction; }
@@ -120,11 +129,13 @@ namespace SerialExpress.Model
             {
                 mNextAction = value;
                 RaisePropertyChanged();
-                RaisePropertyChanged("IsOpen");
+                RaisePropertyChanged(nameof(IsOpened));
             }
         }
 
+        [JsonIgnore]
         public DelegateCommand OpenCommand { get; }
+        [JsonIgnore]
         public DelegateCommand UpdatePortNameListCommand { get; }
         public SerialPortManager()
         {
@@ -137,24 +148,24 @@ namespace SerialExpress.Model
                     115200, 230400, 460800, 921600,
                     1000000, 2000000, 3000000
                 };
-            RaisePropertyChanged("BaudRateList");
+            RaisePropertyChanged(nameof(BaudRateList));
             DataBitsList = new ObservableCollection<int>()
                 {
                     7, 8
                 };
-            RaisePropertyChanged("DataBitsList");
+            RaisePropertyChanged(nameof(DataBitsList));
             ParityList = new ObservableCollection<Parity>();
             foreach (Parity e in Enum.GetValues(typeof(Parity)))
             {
                 ParityList.Add(e);
             }
-            RaisePropertyChanged("ParityList");
+            RaisePropertyChanged(nameof(ParityList));
             StopBitsList = new ObservableCollection<StopBits>();
             foreach (StopBits e in Enum.GetValues(typeof(StopBits)))
             {
                 StopBitsList.Add(e);
             }
-            RaisePropertyChanged("StopBitsList");
+            RaisePropertyChanged(nameof(StopBitsList));
 
             SerialPort.BaudRate = 9600;
             SerialPort.DataBits = 8;
@@ -169,30 +180,35 @@ namespace SerialExpress.Model
                 {
                     try
                     {
-                        SerialPort.PortName = SelectedPortName.ComName;
                         if (!SerialPort.IsOpen)
                         {
-                            SerialPort.Open();
-                            NextAction = NextActionEnum.Close;
+                            if (SelectedPortName.ComName != null && SelectedPortName.ComName != string.Empty)
+                            {
+                                SerialPort.PortName = SelectedPortName.ComName;
+                                SerialPort.Open();
+                                NextAction = NextActionEnum.Close;
+                            }
                         }
                         else
                         {
                             SerialPort.Close();
                             NextAction = NextActionEnum.Open;
+                            SelectedPortName = new PortNameType("","");
                         }
                     }
                     catch 
                     {
                         SerialPort.Close();
                         NextAction = NextActionEnum.Open;
+                        SelectedPortName = new PortNameType("","");
                     }
 
                     if (PortStatusChangedCallback != null)
                     {
                         PortStatusChangedCallback(SerialPort);
                     }
-                    RaisePropertyChanged("IsOpened");
-                    RaisePropertyChanged("IsClosed");
+                    RaisePropertyChanged(nameof(IsOpened));
+                    RaisePropertyChanged(nameof(IsClosed));
                 },
                 () =>
                 {
@@ -207,7 +223,7 @@ namespace SerialExpress.Model
                     {
                         PortNameList.Add(s);
                     }
-                    RaisePropertyChanged("PortNameList");
+                    RaisePropertyChanged(nameof(PortNameList));
                 },
                 () =>
                 {

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SerialExpress.View"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:cv="clr-namespace:SerialExpress.Converter"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
@@ -31,6 +32,9 @@
             </Grid.RowDefinitions>
             <ListView
                 Name="RxTerminalListView"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                VirtualizingPanel.IsVirtualizing="True"
+                VirtualizingPanel.VirtualizationMode="Recycling"
                 ItemsSource="{Binding Path=RxTerminalManager.DataList, Mode=OneWay, NotifyOnTargetUpdated=True}"
                 TargetUpdated="TerminalListView_TargetUpdated">
                 <ListView.View>
@@ -71,6 +75,9 @@
             <ListView
                 Grid.Row="0"
                 Name="TxTerminalListView"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                VirtualizingPanel.IsVirtualizing="True"
+                VirtualizingPanel.VirtualizationMode="Recycling"
                 ItemsSource="{Binding Path=TxTerminalManager.DataList, Mode=OneWay, NotifyOnTargetUpdated=True}"
                 TargetUpdated="TerminalListView_TargetUpdated">
                 <ListView.View>
@@ -105,16 +112,15 @@
                         <KeyBinding
                             Gesture="Enter"
                             Command="{Binding Path=SendCommand}"
-                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}"
-                            Key="Return" />
+                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
                         <KeyBinding
                             Gesture="Up"
                             Command="{Binding Path=GetPrevCommand}"
-                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
+                            CommandParameter="{Binding ElementName=InputTextBox}" />
                         <KeyBinding
                             Gesture="Down"
                             Command="{Binding Path=GetNextCommand}"
-                            CommandParameter="{Binding ElementName=InputTextBox, Path=Text}" />
+                            CommandParameter="{Binding ElementName=InputTextBox}" />
                     </TextBox.InputBindings>
                 </TextBox>
                 <Button

@@ -178,6 +178,7 @@
                 Name="Connect_Button"
                 VerticalAlignment="Center"
                 Content="{Binding Path=SerialPortManager.NextAction}"
+                IsEnabled="{Binding Path=SerialPortManager.IsSelected}"
                 Command="ApplicationCommands.Open"
                 Width="100"
                 Padding="16 0"

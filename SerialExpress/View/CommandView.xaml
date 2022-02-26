@@ -8,28 +8,32 @@
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter
+            x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition
-                    Height="auto" />
-                <RowDefinition
                     Height="*" />
+                <RowDefinition
+                    Height="auto" />
                 <RowDefinition
                     Height="auto" />
                 <RowDefinition
                     Height="2*" />
             </Grid.RowDefinitions>
             <TreeView
-                Grid.Row="1"
+                Grid.Row="0"
                 Name="CommandFileTreeView"
                 ItemsSource="{Binding Path=CommandManager.CommandFileTreeRoot, Mode=OneWay}">
                 <b:Interaction.Triggers>
                     <b:EventTrigger
                         EventName="SelectedItemChanged">
                         <b:InvokeCommandAction
-                            Command="{Binding Path=CommandManager.SelectedItemChanged}"
-                            CommandParameter="{Binding ElementName=CommandFileTreeView, Path=SelectedItem}"/>
+                            Command="{Binding Path=CommandManager.SelectedFileTreeItemChanged}"
+                            CommandParameter="{Binding ElementName=CommandFileTreeView, Path=SelectedItem}" />
                     </b:EventTrigger>
                     <b:EventTrigger
                         EventName="MouseDoubleClick">
@@ -38,6 +42,19 @@
                             CommandParameter="{Binding ElementName=CommandFileTreeView, Path=SelectedItem}" />
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
+                <TreeView.ItemContainerStyle>
+                    <Style
+                        TargetType="{x:Type TreeViewItem}">
+                        <!--
+                        <EventSetter
+                            Event="MouseUp"
+                            Handler="MouseClickEvent" />
+                        -->
+                        <Setter
+                            Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                    </Style>
+                </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate
                         ItemsSource="{Binding Children}">
@@ -45,48 +62,189 @@
                             Orientation="Horizontal"
                             Height="20">
                             <TextBlock
-                                Text="{Binding Name}" />
+                                Text="{Binding Path=Name}"
+                                HorizontalAlignment="Stretch" />
                         </StackPanel>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <!--
+                        <MenuItem
+                            Header="New"
+                            Command="{Binding Path=CommandManager.AddFile}" />
+                        -->
+                        <MenuItem
+                            Header="Open"
+                            Command="{Binding Path=CommandManager.EditFile}" />
+                    </ContextMenu>
+                </TreeView.ContextMenu>
             </TreeView>
             <GridSplitter
-                Grid.Row="2"
+                Grid.Row="1"
                 Height="4"
                 VerticalAlignment="Stretch" />
+            <Grid
+                Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition
+                        Width="auto" />
+                    <ColumnDefinition
+                        Width="*" />
+                    <ColumnDefinition
+                        Width="auto" />
+                    <ColumnDefinition
+                        Width="*" />
+                </Grid.ColumnDefinitions>
+                <CheckBox
+                    Grid.Column="0"
+                    Content="Prefix"
+                    VerticalAlignment="Center"
+                    Name="CommandPrefixCheckBox"
+                    IsChecked="{Binding Path=CommandManager.UseCommandPrefix}"/>
+                <TextBox
+                    Grid.Column="1"
+                    Margin="4"
+                    Name="CommandPrefixTextBox"
+                    Text="{Binding Path=CommandManager.CommandPrefix, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding ElementName=CommandPrefixCheckBox, Path=IsChecked}"/>
+                <CheckBox
+                    Grid.Column="2"
+                    Content="Suffix"
+                    VerticalAlignment="Center"
+                    Name="CommandSuffixCheckBox"
+                    IsChecked="{Binding Path=CommandManager.UseCommandSuffix}" />
+                <TextBox
+                    Grid.Column="3"
+                    Margin="4"
+                    Name="CommandSuffixTextBox"
+                    Text="{Binding Path=CommandManager.CommandSuffix, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding ElementName=CommandSuffixCheckBox, Path=IsChecked}" />
+            </Grid>
             <ListView
                 Grid.Row="3"
                 Name="CommandListView"
                 IsEnabled="{Binding Path=SerialPortManager.IsOpened}"
                 ItemsSource="{Binding Path=CommandManager.CommandList, Mode=OneWay}"
-                KeyUp="CommandListView_KeyUp">
-                <b:Interaction.Triggers>
-                    <b:EventTrigger
-                        EventName="MouseDoubleClick">
-                        <b:InvokeCommandAction
-                            Command="{Binding Path=CommandManager.SendCommand}"
-                            CommandParameter="{Binding ElementName=CommandListView, Path=SelectedItem}" />
-                    </b:EventTrigger>
-                    <!--
-                    <b:EventTrigger
-                        EventName="KeyUp">
-                        <b:InvokeCommandAction
-                            Command="{Binding Path=CommandManager.SendCommand}"
-                            CommandParameter="{Binding ElementName=CommandListView, Path=SelectedItem}" />
-                    </b:EventTrigger>
-                    -->
-                </b:Interaction.Triggers>
+                SelectedItem="{Binding Path=CommandManager.SelectedCommandListItem}"
+                HorizontalContentAlignment="Stretch"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                VirtualizingPanel.IsVirtualizing="True"
+                VirtualizingPanel.VirtualizationMode="Recycling"
+                KeyUp="CommandListView_KeyUp"
+                MouseDown="CommandListView_MouseDown">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem
+                            Header="Add"
+                            Command="{Binding Path=CommandManager.AddCommandItem}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.ItemContainerStyle>
+                    <Style
+                        TargetType="{x:Type ListViewItem}">
+                        <EventSetter
+                            Event="PreviewMouseDown"
+                            Handler="ListViewItem_MouseClickEvent" />
+                        <Setter
+                            Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                        <Setter
+                            Property="ContextMenu">
+                            <Setter.Value>
+                                <ContextMenu>
+                                    <MenuItem
+                                        Header="Add"
+                                        Command="{Binding Path=AddCommandItem}" />
+                                    <MenuItem
+                                        Header="Insert"
+                                        Command="{Binding Path=InsertCommandItem}" />
+                                </ContextMenu>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
                         <GridViewColumn
-                            Header="#"
-                            DisplayMemberBinding="{Binding Path=Index}"/>
+                            Header=" # ">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Text="{Binding Path=Index}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn
-                            Header="Command"
-                            DisplayMemberBinding="{Binding Path=Command}" />
+                            Header="Command">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock
+                                            Name="CommandTextBlock"
+                                            Text="{Binding Path=Command}"
+                                            HorizontalAlignment="Stretch"
+                                            PreviewMouseDown="ListViewItem_MouseClickEvent">
+                                            <TextBlock.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem
+                                                        Header="Edit"
+                                                        Command="{Binding Path=EditCommand}" />
+                                                    <MenuItem
+                                                        Header="Add"
+                                                        Command="{Binding Path=AddCommandItem}" />
+                                                    <MenuItem
+                                                        Header="Insert"
+                                                        Command="{Binding Path=InsertCommandItem}" />
+                                                </ContextMenu>
+                                            </TextBlock.ContextMenu>
+                                        </TextBlock>
+                                        <TextBox
+                                            Name="CommandTextBox"
+                                            Text="{Binding Path=Command, UpdateSourceTrigger=LostFocus}"
+                                            HorizontalAlignment="Stretch"
+                                            Visibility="{Binding Path=CommandIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            IsVisibleChanged="TextBox_IsVisibleChanged"
+                                            LostKeyboardFocus="TextBox_LostKeyboardFocus"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn
-                            Header="Description"
-                            DisplayMemberBinding="{Binding Path=Description}" />
+                            Header="Description">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock
+                                            Name="DescriptionTextBlock"
+                                            Text="{Binding Path=Description}"
+                                            HorizontalAlignment="Stretch"
+                                            PreviewMouseDown="ListViewItem_MouseClickEvent">
+                                            <TextBlock.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem
+                                                        Header="Edit"
+                                                        Command="{Binding Path=EditDescription}" />
+                                                    <MenuItem
+                                                        Header="Add"
+                                                        Command="{Binding Path=AddCommandItem}" />
+                                                    <MenuItem
+                                                        Header="Insert"
+                                                        Command="{Binding Path=InsertCommandItem}" />
+                                                </ContextMenu>
+                                            </TextBlock.ContextMenu>
+                                        </TextBlock>
+                                        <TextBox
+                                            Name="DescriptionTextBox"
+                                            Text="{Binding Path=Description, UpdateSourceTrigger=LostFocus}"
+                                            HorizontalAlignment="Stretch"
+                                            Visibility="{Binding Path=DescriptionIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            IsVisibleChanged="TextBox_IsVisibleChanged"
+                                            LostKeyboardFocus="TextBox_LostKeyboardFocus" />
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>

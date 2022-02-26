@@ -1,4 +1,5 @@
-﻿using SerialExpress.Converter;
+﻿using Newtonsoft.Json;
+using SerialExpress.Converter;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -48,14 +49,22 @@ namespace SerialExpress.Model
             LF,
             CRLF
         }
+        [JsonIgnore]
         public Dictionary<TokenType, string> TokenDict { get; }
+        [JsonIgnore]
         public FileStream? BinFileStream { get; set; }
+        [JsonIgnore]
         public FileStream? TextFileStream { get; set; }
+        [JsonIgnore]
         public MemoryStream TempStream { get; }
+        [JsonIgnore]
         public ObservableCollection<TerminalDataItem> DataList { get; }
         public TokenType Token { get; set; } = TokenType.CRLF;
+        [JsonIgnore]
         public ObservableCollection<TokenType> TokenTypeList { get; }
+        [JsonIgnore]
         public int TokenIndex { get; set; } = 0;
+        [JsonIgnore]
         public CollectionViewSource ViewSource { get; }
 
         public TerminalManager()

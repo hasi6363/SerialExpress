@@ -12,13 +12,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
 
 namespace SerialExpress.ViewModel
 {
     public class MainWindowViewModel : BindableBase
-    {
+    { 
+        public ConfigurationManager ConfigurationManager { get; }
         public RxTerminalManager RxTerminalManager { get; }
         public TxTerminalManager TxTerminalManager { get; }
         public SerialPortManager SerialPortManager { get; }
@@ -29,6 +31,15 @@ namespace SerialExpress.ViewModel
         public DelegateCommand GetPrevCommand { get; }
         public DelegateCommand GetNextCommand { get; }
         public DelegateCommand ClearTerminal { get; }
+        public string WindowTitle
+        {
+            get
+            {
+                var com = SerialPortManager.SelectedPortName.ComName;
+                var ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                return $"[{com}] {ver.ProductName} [{ ver.ProductVersion}]";
+            }
+        }
         public string InputText
         {
             get { return History.Current; }
@@ -55,11 +66,60 @@ namespace SerialExpress.ViewModel
                 }
             }
         }
+        public bool UseCommandPrefix
+        {
+            get
+            {
+                return CommandManager.UseCommandPrefix;
+            }
+            set
+            {
+                CommandManager.UseCommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string CommandPrefix
+        {
+            get
+            {
+                return CommandManager.CommandPrefix;
+            }
+            set
+            {
+                CommandManager.CommandPrefix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public bool UseCommandSuffix
+        {
+            get
+            {
+                return CommandManager.UseCommandSuffix;
+            }
+            set
+            {
+                CommandManager.UseCommandSuffix = value;
+                RaisePropertyChanged();
+            }
+        }
+        public string CommandSuffix
+        {
+            get
+            {
+                return CommandManager.CommandSuffix;
+            }
+            set
+            {
+                CommandManager.CommandSuffix = value;
+                RaisePropertyChanged();
+            }
+        }
 
         private DispatcherTimer m_DataReceivedTimer;
 
         public MainWindowViewModel()
         {
+            ConfigurationManager = new ConfigurationManager();
             RxTerminalManager = new RxTerminalManager();
             TxTerminalManager = new TxTerminalManager();
             SerialPortManager = new SerialPortManager();
@@ -98,6 +158,10 @@ namespace SerialExpress.ViewModel
                 (object? parameter) =>
                 {
                     InputText = History.Prev();
+                    if(parameter is TextBox tb)
+                    {
+                        tb.Select(tb.Text.Length, 0);
+                    }
                 },
                 () =>
                 {
@@ -107,6 +171,10 @@ namespace SerialExpress.ViewModel
                 (object? parameter) =>
                 {
                     InputText = History.Next();
+                    if (parameter is TextBox tb)
+                    {
+                        tb.Select(tb.Text.Length, 0);
+                    }
                 },
                 () =>
                 {
@@ -160,16 +228,59 @@ namespace SerialExpress.ViewModel
                 RxTerminalManager.BinFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataBinFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
                 RxTerminalManager.TextFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataTextFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
             }
-            RaisePropertyChanged("StatusBarText");
+            RaisePropertyChanged(nameof(WindowTitle));
+            RaisePropertyChanged(nameof(StatusBarText));
         }
         public void ShowSerialPortOpenDialog()
         {
+            LoadConfigurations();
+            History.Load();
             var spw = new SerialPortOpenWindow(SerialPortManager, TxTerminalManager, RxTerminalManager);
-            spw.ShowDialog();
+            if (spw.ShowDialog() == true)
+            {
+                StoreConfigurations();
+            }
+        }
+        private void LoadConfigurations()
+        {
+            var config = ConfigurationManager.Load();
+
+            if (config != null)
+            {
+                try
+                {
+                    SerialPortManager.BaudRate = int.Parse(config.GetSection("SerialPort").GetSection("BaudRate").Value);
+                    SerialPortManager.DataBits = int.Parse(config.GetSection("SerialPort").GetSection("DataBits").Value);
+                    SerialPortManager.Parity = Enum.Parse<Parity>(config.GetSection("SerialPort").GetSection("Parity").Value);
+                    SerialPortManager.StopBits = Enum.Parse<StopBits>(config.GetSection("SerialPort").GetSection("StopBits").Value);
+                    TxTerminalManager.Token = Enum.Parse<TerminalManager.TokenType>(config.GetSection("TxTerminal").GetSection("Token").Value);
+                    RxTerminalManager.Token = Enum.Parse<TerminalManager.TokenType>(config.GetSection("RxTerminal").GetSection("Token").Value);
+                    CommandManager.UseCommandPrefix = bool.Parse(config.GetSection("Command").GetSection("UseCommandPrefix").Value);
+                    CommandManager.CommandPrefix = config.GetSection("Command").GetSection("CommandPrefix").Value;
+                    CommandManager.UseCommandSuffix = bool.Parse(config.GetSection("Command").GetSection("UseCommandSuffix").Value);
+                    CommandManager.CommandSuffix = config.GetSection("Command").GetSection("CommandSuffix").Value;
+                }
+                catch
+                {
+                    StoreConfigurations();
+                }
+            }
+        }
+        public void StoreConfigurations()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                ["SerialPort"] = SerialPortManager,
+                ["TxTerminal"] = TxTerminalManager,
+                ["RxTerminal"] = RxTerminalManager,
+                ["Command"] = CommandManager
+            };
+            ConfigurationManager.Save(dict);
         }
         public void Save()
         {
-
+            StoreConfigurations();
+            History.Save();
         }
         public void SaveAs()
         {

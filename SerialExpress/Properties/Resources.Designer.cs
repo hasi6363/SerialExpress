@@ -70,11 +70,20 @@ namespace SerialExpress.Properties {
         }
         
         /// <summary>
-        ///   command_tab.txt に類似しているローカライズされた文字列を検索します。
+        ///   command_history.txt に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        internal static string CommandTabFileName {
+        internal static string CommandHistoryFileName {
             get {
-                return ResourceManager.GetString("CommandTabFileName", resourceCulture);
+                return ResourceManager.GetString("CommandHistoryFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   config.json に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ConfigurationFileName {
+            get {
+                return ResourceManager.GetString("ConfigurationFileName", resourceCulture);
             }
         }
         
