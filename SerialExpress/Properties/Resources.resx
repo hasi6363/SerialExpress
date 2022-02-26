@@ -120,8 +120,8 @@
   <data name="CommandDirName" xml:space="preserve">
     <value>command</value>
   </data>
-  <data name="CommandTabFileName" xml:space="preserve">
-    <value>command_tab.txt</value>
+  <data name="CommandHistoryFileName" xml:space="preserve">
+    <value>command_history.txt</value>
   </data>
   <data name="ConfigurationFileName" xml:space="preserve">
     <value>config.json</value>

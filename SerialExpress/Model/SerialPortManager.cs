@@ -62,9 +62,8 @@ namespace SerialExpress.Model
             set
             {
                 mSelectedPortName = value;
-                SerialPort.PortName = mSelectedPortName.ComName;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(PortName));
+                RaisePropertyChanged(nameof(IsSelected));
             }
         }
         public int BaudRate
@@ -113,6 +112,11 @@ namespace SerialExpress.Model
         public bool IsClosed
         {
             get { return !SerialPort.IsOpen; }
+        }
+        [JsonIgnore]
+        public bool IsSelected
+        {
+            get { return SelectedPortName.ComName != null && SelectedPortName.ComName != string.Empty; }
         }
 
         private NextActionEnum mNextAction = NextActionEnum.Open;
@@ -176,22 +180,27 @@ namespace SerialExpress.Model
                 {
                     try
                     {
-                        SerialPort.PortName = SelectedPortName.ComName;
                         if (!SerialPort.IsOpen)
                         {
-                            SerialPort.Open();
-                            NextAction = NextActionEnum.Close;
+                            if (SelectedPortName.ComName != null && SelectedPortName.ComName != string.Empty)
+                            {
+                                SerialPort.PortName = SelectedPortName.ComName;
+                                SerialPort.Open();
+                                NextAction = NextActionEnum.Close;
+                            }
                         }
                         else
                         {
                             SerialPort.Close();
                             NextAction = NextActionEnum.Open;
+                            SelectedPortName = new PortNameType("","");
                         }
                     }
                     catch 
                     {
                         SerialPort.Close();
                         NextAction = NextActionEnum.Open;
+                        SelectedPortName = new PortNameType("","");
                     }
 
                     if (PortStatusChangedCallback != null)

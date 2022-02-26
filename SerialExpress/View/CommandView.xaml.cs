@@ -24,9 +24,9 @@ namespace SerialExpress.View
     /// </summary>
     public partial class CommandView : UserControl
     {
-        private static readonly int ClickTimerThreshold = 400;
-        private static readonly int LongDoubleClickThreshold = 250;
+        private static readonly int ClickTimerThreshold = 500;
         private MouseClickManager MouseClickManager;
+        private CommandItem? FirstClickItem = null;
         public CommandView()
         {
             InitializeComponent();
@@ -36,7 +36,7 @@ namespace SerialExpress.View
             };
         }
 
-        private void MouseClickedEvent(object? sender, int click_count, TimeSpan last_elapsed_time)
+        private void MouseClickedEvent(object? sender, object? parameter, int click_count, TimeSpan last_elapsed_time)
         {
             if(sender != null)
             {
@@ -44,13 +44,18 @@ namespace SerialExpress.View
                 {
                     case 1:
                         {
-                            if (sender is ListViewItem lvi)
+                            if (sender is TextBlock tb && tb.DataContext is CommandItem ci)
                             {
-                                var item = (CommandItem)lvi.Content;
-                                if (item != null)
+                                if (FirstClickItem == ci)
                                 {
-                                    item.CommandIsEditable = false;
-                                    item.DescriptionIsEditable = false;
+                                    if (tb.Name is "CommandTextBlock")
+                                    {
+                                        ci.CommandIsEditable = true;
+                                    }
+                                    else if (tb.Name is "DescriptionTextBlock")
+                                    {
+                                        ci.DescriptionIsEditable = true;
+                                    }
                                 }
                             }
                             break;
@@ -59,27 +64,10 @@ namespace SerialExpress.View
                         {
                             if (sender is ListViewItem lvi)
                             {
-                                if (last_elapsed_time.TotalMilliseconds < LongDoubleClickThreshold)
+                                var item = (CommandItem)lvi.Content;
+                                if (item != null && !item.CommandIsEditable && !item.DescriptionIsEditable)
                                 {
-                                    var item = (CommandItem)lvi.Content;
-                                    if (item != null && !item.CommandIsEditable && !item.DescriptionIsEditable)
-                                    {
-                                        item.Send();
-                                    }
-                                }
-                            }
-                            if (sender is ContentControl cc && cc.DataContext is CommandItem ci)
-                            {
-                                if (last_elapsed_time.TotalMilliseconds > LongDoubleClickThreshold)
-                                {
-                                    if ((string)cc.Tag == "Command")
-                                    {
-                                        ci.CommandIsEditable = true;
-                                    }
-                                    else if ((string)cc.Tag == "Description")
-                                    {
-                                        ci.DescriptionIsEditable = true;
-                                    }
+                                    item.Send();
                                 }
                             }
                             break;
@@ -112,11 +100,23 @@ namespace SerialExpress.View
             }
         }
 
-        private void MouseClickEvent_MouseUp(object sender, MouseButtonEventArgs e)
+        private void ListViewItem_MouseClickEvent(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                MouseClickManager.UpdateClickCount(sender, e);
+                object? param = null;
+                if(sender is ListViewItem lvi)
+                {
+                    if(lvi.IsFocused == true)
+                    {
+                        FirstClickItem = lvi.DataContext as CommandItem;
+                    }
+                    else
+                    {
+                        FirstClickItem = null;
+                    }
+                }
+                MouseClickManager.UpdateClickCount(sender, e, param);
             }
         }
 
@@ -131,6 +131,29 @@ namespace SerialExpress.View
             {
                 var lv = (ListView)sender;
                 lv.SelectedItem = null;
+            }
+        }
+
+        private void TextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if(sender is TextBox tb)
+            {
+                tb.Focus();
+            }
+        }
+
+        private void TextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.DataContext is CommandItem ci)
+            {
+                if (tb.Name == "CommandTextBox")
+                {
+                    ci.CommandIsEditable = false;
+                }
+                else if (tb.Name is "DescriptionTextBox")
+                {
+                    ci.DescriptionIsEditable = false;
+                }
             }
         }
     }

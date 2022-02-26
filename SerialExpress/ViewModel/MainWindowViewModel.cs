@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
 
@@ -30,6 +31,15 @@ namespace SerialExpress.ViewModel
         public DelegateCommand GetPrevCommand { get; }
         public DelegateCommand GetNextCommand { get; }
         public DelegateCommand ClearTerminal { get; }
+        public string WindowTitle
+        {
+            get
+            {
+                var com = SerialPortManager.SelectedPortName.ComName;
+                var ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                return $"[{com}] {ver.ProductName} [{ ver.ProductVersion}]";
+            }
+        }
         public string InputText
         {
             get { return History.Current; }
@@ -148,6 +158,10 @@ namespace SerialExpress.ViewModel
                 (object? parameter) =>
                 {
                     InputText = History.Prev();
+                    if(parameter is TextBox tb)
+                    {
+                        tb.Select(tb.Text.Length, 0);
+                    }
                 },
                 () =>
                 {
@@ -157,6 +171,10 @@ namespace SerialExpress.ViewModel
                 (object? parameter) =>
                 {
                     InputText = History.Next();
+                    if (parameter is TextBox tb)
+                    {
+                        tb.Select(tb.Text.Length, 0);
+                    }
                 },
                 () =>
                 {
@@ -210,11 +228,13 @@ namespace SerialExpress.ViewModel
                 RxTerminalManager.BinFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataBinFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
                 RxTerminalManager.TextFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataTextFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
             }
-            RaisePropertyChanged("StatusBarText");
+            RaisePropertyChanged(nameof(WindowTitle));
+            RaisePropertyChanged(nameof(StatusBarText));
         }
         public void ShowSerialPortOpenDialog()
         {
             LoadConfigurations();
+            History.Load();
             var spw = new SerialPortOpenWindow(SerialPortManager, TxTerminalManager, RxTerminalManager);
             if (spw.ShowDialog() == true)
             {
@@ -260,6 +280,7 @@ namespace SerialExpress.ViewModel
         public void Save()
         {
             StoreConfigurations();
+            History.Save();
         }
         public void SaveAs()
         {

@@ -28,6 +28,7 @@ namespace SerialExpress.View
             public uint MaxCount { get; set; } = 0;
             private int ClickCount;
             public object SenderObject { get; }
+            public object? Parameter { get; set; }
             private MouseClickedEventDelegate mTimerTickEvent;
             public MouseClickObject(object sender, TimeSpan interval, MouseClickedEventDelegate event_handler, Dispatcher dispatcher)
             {
@@ -61,7 +62,7 @@ namespace SerialExpress.View
                 Timer.Stop();
                 if (mTimerTickEvent != null)
                 {
-                    mTimerTickEvent(SenderObject, ClickCount, LastElapsedTime);
+                    mTimerTickEvent(SenderObject, Parameter, ClickCount, LastElapsedTime);
                 }
                 mStopWatch.Stop();
                 ClickCount = 0;
@@ -86,7 +87,7 @@ namespace SerialExpress.View
                 }
             }
         }
-        public delegate void MouseClickedEventDelegate(object? sender, int click_count, TimeSpan last_elapsed_time);
+        public delegate void MouseClickedEventDelegate(object? sender, object? param, int click_count, TimeSpan last_elapsed_time);
         public event MouseClickedEventDelegate MouseClickedEvent;
 
         public MouseClickManager(int millisecond, Dispatcher dispatcher, MouseClickedEventDelegate mouse_clicked_event)
@@ -96,7 +97,7 @@ namespace SerialExpress.View
             Dispatcher = dispatcher;
             MouseClickedEvent = mouse_clicked_event;
         }
-        public void UpdateClickCount(object sender, MouseButtonEventArgs e)
+        public void UpdateClickCount(object sender, MouseButtonEventArgs e, object? parameter)
         {
             var obj = MouseClickObjectList.Find((MouseClickObject obj) => obj.SenderObject == sender);
             if (obj == null)
@@ -104,10 +105,12 @@ namespace SerialExpress.View
                 obj = new MouseClickObject(sender, Interval, MouseClickedEvent, Dispatcher);
                 obj.MaxCount = mMaxCount;
                 MouseClickObjectList.Add(obj);
+                obj.Parameter = parameter;
                 obj.UpdateClickCount();
             }
             else
             {
+                obj.Parameter = parameter;
                 obj.UpdateClickCount();
             }
         }

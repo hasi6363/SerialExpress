@@ -26,8 +26,6 @@ namespace SerialExpress.View
         public MainWindow()
         {
             InitializeComponent();
-            var ver = System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            this.Title = ver.ProductName + " [" + ver.ProductVersion + "]";
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -152,5 +150,13 @@ namespace SerialExpress.View
             e.CanExecute = true;
         }
 
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            var vm = DataContext as MainWindowViewModel;
+            if (vm != null)
+            {
+                vm.Save();
+            }
+        }
     }
 }

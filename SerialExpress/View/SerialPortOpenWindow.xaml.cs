@@ -40,7 +40,6 @@ namespace SerialExpress.View
                     return;
                 }
             }
-            this.DialogResult = false;
         }
 
         private void Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)

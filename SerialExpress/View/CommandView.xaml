@@ -45,9 +45,11 @@
                 <TreeView.ItemContainerStyle>
                     <Style
                         TargetType="{x:Type TreeViewItem}">
+                        <!--
                         <EventSetter
                             Event="MouseUp"
-                            Handler="MouseClickEvent_MouseUp" />
+                            Handler="MouseClickEvent" />
+                        -->
                         <Setter
                             Property="HorizontalContentAlignment"
                             Value="Stretch" />
@@ -67,9 +69,11 @@
                 </TreeView.ItemTemplate>
                 <TreeView.ContextMenu>
                     <ContextMenu>
+                        <!--
                         <MenuItem
                             Header="New"
                             Command="{Binding Path=CommandManager.AddFile}" />
+                        -->
                         <MenuItem
                             Header="Open"
                             Command="{Binding Path=CommandManager.EditFile}" />
@@ -124,6 +128,9 @@
                 ItemsSource="{Binding Path=CommandManager.CommandList, Mode=OneWay}"
                 SelectedItem="{Binding Path=CommandManager.SelectedCommandListItem}"
                 HorizontalContentAlignment="Stretch"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                VirtualizingPanel.IsVirtualizing="True"
+                VirtualizingPanel.VirtualizationMode="Recycling"
                 KeyUp="CommandListView_KeyUp"
                 MouseDown="CommandListView_MouseDown">
                 <ListView.ContextMenu>
@@ -137,8 +144,8 @@
                     <Style
                         TargetType="{x:Type ListViewItem}">
                         <EventSetter
-                            Event="MouseUp"
-                            Handler="MouseClickEvent_MouseUp" />
+                            Event="PreviewMouseDown"
+                            Handler="ListViewItem_MouseClickEvent" />
                         <Setter
                             Property="HorizontalContentAlignment"
                             Value="Stretch" />
@@ -173,14 +180,16 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <ContentControl
-                                            PreviewMouseUp="MouseClickEvent_MouseUp"
-                                            Tag="Command">
-                                            <ContentControl.ContextMenu>
+                                        <TextBlock
+                                            Name="CommandTextBlock"
+                                            Text="{Binding Path=Command}"
+                                            HorizontalAlignment="Stretch"
+                                            PreviewMouseDown="ListViewItem_MouseClickEvent">
+                                            <TextBlock.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem
                                                         Header="Edit"
-                                                        Command="{Binding Path=EditCommand}"/>
+                                                        Command="{Binding Path=EditCommand}" />
                                                     <MenuItem
                                                         Header="Add"
                                                         Command="{Binding Path=AddCommandItem}" />
@@ -188,15 +197,15 @@
                                                         Header="Insert"
                                                         Command="{Binding Path=InsertCommandItem}" />
                                                 </ContextMenu>
-                                            </ContentControl.ContextMenu>
-                                            <TextBlock
-                                                Text="{Binding Path=Command}"
-                                                HorizontalAlignment="Stretch" />
-                                        </ContentControl>
-                                            <TextBox
-                                                Text="{Binding Path=Command}"
-                                                HorizontalAlignment="Stretch"
-                                                Visibility="{Binding Path=CommandIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                            </TextBlock.ContextMenu>
+                                        </TextBlock>
+                                        <TextBox
+                                            Name="CommandTextBox"
+                                            Text="{Binding Path=Command, UpdateSourceTrigger=LostFocus}"
+                                            HorizontalAlignment="Stretch"
+                                            Visibility="{Binding Path=CommandIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            IsVisibleChanged="TextBox_IsVisibleChanged"
+                                            LostKeyboardFocus="TextBox_LostKeyboardFocus"/>
                                     </Grid>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -206,10 +215,12 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <ContentControl
-                                            PreviewMouseUp="MouseClickEvent_MouseUp"
-                                            Tag="Description">
-                                            <ContentControl.ContextMenu>
+                                        <TextBlock
+                                            Name="DescriptionTextBlock"
+                                            Text="{Binding Path=Description}"
+                                            HorizontalAlignment="Stretch"
+                                            PreviewMouseDown="ListViewItem_MouseClickEvent">
+                                            <TextBlock.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem
                                                         Header="Edit"
@@ -221,15 +232,15 @@
                                                         Header="Insert"
                                                         Command="{Binding Path=InsertCommandItem}" />
                                                 </ContextMenu>
-                                            </ContentControl.ContextMenu>
-                                            <TextBlock
-                                                Text="{Binding Path=Description}"
-                                                HorizontalAlignment="Stretch" />
-                                        </ContentControl>
+                                            </TextBlock.ContextMenu>
+                                        </TextBlock>
                                         <TextBox
-                                            Text="{Binding Path=Description}"
+                                            Name="DescriptionTextBox"
+                                            Text="{Binding Path=Description, UpdateSourceTrigger=LostFocus}"
                                             HorizontalAlignment="Stretch"
-                                            Visibility="{Binding Path=DescriptionIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                            Visibility="{Binding Path=DescriptionIsEditable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            IsVisibleChanged="TextBox_IsVisibleChanged"
+                                            LostKeyboardFocus="TextBox_LostKeyboardFocus" />
                                     </Grid>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>

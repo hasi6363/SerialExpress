@@ -112,10 +112,7 @@ namespace SerialExpress.Model
             {
                 m_Description = value;
                 RaisePropertyChanged();
-                if (SaveEvent != null)
-                {
-                    SaveEvent();
-                }
+                SaveEvent?.Invoke();
             }
         }
         private bool mCommandIsEditable = false;
@@ -505,13 +502,18 @@ namespace SerialExpress.Model
         {
             if(SelectedFileTreeItem != null)
             {
-                using (var sw = new StreamWriter(new FileStream(SelectedFileTreeItem.Path, FileMode.Open, FileAccess.Write, FileShare.Read)))
+                using var sw = new StreamWriter(new FileStream(SelectedFileTreeItem.Path, FileMode.Open, FileAccess.Write, FileShare.Read));
+                try
                 {
                     foreach (var cmd in CommandList)
                     {
                         sw.Write($"{cmd.Command}\t{cmd.Description}\r\n");
                     }
                     sw.Flush();
+                }
+                catch (Exception e) 
+                {
+                    MessageBox.Show(e.Message, "Save Command Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
