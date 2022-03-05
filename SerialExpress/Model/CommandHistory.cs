@@ -53,7 +53,7 @@ namespace SerialExpress.Model
             // if current position is out of range, add new buffer and it is current.
             if (mIndex == Buffer.Count)
             {
-                if (Buffer.Count == 0 || Buffer[Buffer.Count - 1] != "")
+                if (Buffer.Count == 0 || Buffer[^1] != "")
                 {
                     Buffer.Add("");
                 }
@@ -81,14 +81,18 @@ namespace SerialExpress.Model
         {
             Clear();
             using var sr = new StreamReader(new FileStream(Properties.Resources.CommandHistoryFileName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read), Encoding.UTF8);
-            do
+            if (sr != null)
             {
-                var s = sr.ReadLine();
-                if (s != null)
+                string? s;
+                do
                 {
-                    Buffer.Add((string)s);
-                }
-            } while (sr == null);
+                    s = sr.ReadLine();
+                    if (s != null)
+                    {
+                        Buffer.Add((string)s);
+                    }
+                } while (s == null);
+            }
         }
     }
 }

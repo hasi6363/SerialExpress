@@ -115,7 +115,7 @@ namespace SerialExpress.ViewModel
             }
         }
 
-        private DispatcherTimer m_DataReceivedTimer;
+        private readonly DispatcherTimer m_DataReceivedTimer;
 
         public MainWindowViewModel()
         {
@@ -142,9 +142,7 @@ namespace SerialExpress.ViewModel
             SendCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
-                    if (!(parameter is string)) throw new ArgumentException();
-                    string? command = parameter as string;
-                    if(command is null) throw new ArgumentException();
+                    if (parameter is not string command) throw new ArgumentException($"parameter is not string, parameter:{parameter}");
                     InputText = command;
                     byte[] data_src = StringToBytesConverter.Convert(command);
                     TxTerminalManager.Send(data_src);
@@ -199,7 +197,7 @@ namespace SerialExpress.ViewModel
                 byte[] data = new byte[SerialPortManager.SerialPort.BytesToRead];
                 SerialPortManager.SerialPort.Read(data, 0, data.Length);
                 RxTerminalManager.Write(data);
-                RaisePropertyChanged("ReceivedTempData");
+                RaisePropertyChanged(nameof(ReceivedTempData));
                 m_DataReceivedTimer.IsEnabled = false;
             }
         }
@@ -223,10 +221,18 @@ namespace SerialExpress.ViewModel
                 {
                     Directory.CreateDirectory(log_dir);
                 }
-                TxTerminalManager.BinFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.TxDataBinFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-                TxTerminalManager.TextFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.TxDataTextFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-                RxTerminalManager.BinFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataBinFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-                RxTerminalManager.TextFileStream = new FileStream(log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataTextFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+
+                TxTerminalManager.BinFilePath = log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.TxDataBinFileName;
+                TxTerminalManager.TextFilePath = log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.TxDataTextFileName;
+                RxTerminalManager.BinFilePath = log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataBinFileName;
+                RxTerminalManager.TextFilePath = log_dir + Path.DirectorySeparatorChar + WakeupTime.ToString("yyyyMMdd-HHmmss_") + port_name + Properties.Resources.RxDataTextFileName;
+            }
+            else
+            {
+                TxTerminalManager.BinFilePath = null;
+                TxTerminalManager.TextFilePath = null;
+                RxTerminalManager.BinFilePath = null;
+                RxTerminalManager.TextFilePath = null;
             }
             RaisePropertyChanged(nameof(WindowTitle));
             RaisePropertyChanged(nameof(StatusBarText));

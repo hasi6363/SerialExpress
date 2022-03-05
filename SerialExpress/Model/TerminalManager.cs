@@ -28,12 +28,16 @@ namespace SerialExpress.Model
         {
             Time = DateTime.Now;
             Text = message;
-            Data = new byte[0];
+            Data = Array.Empty<byte>();
             IsMessage = true;
         }
         public override string ToString()
         {
-            return "[" + Time.ToString("HH:mm:ss.fff") + "]\t" + Text;
+            return Text;
+        }
+        public string ToString(bool with_time)
+        {
+            return (with_time ? "[" + Time.ToString("HH:mm:ss.fff") + "]\t" : "") + Text;
         }
     }
     public class TerminalManager:BindableBase
@@ -52,7 +56,11 @@ namespace SerialExpress.Model
         [JsonIgnore]
         public Dictionary<TokenType, string> TokenDict { get; }
         [JsonIgnore]
+        public string? BinFilePath { get; set; } = null;
+        [JsonIgnore]
         public FileStream? BinFileStream { get; set; }
+        [JsonIgnore]
+        public string? TextFilePath { get; set; } = null;
         [JsonIgnore]
         public FileStream? TextFileStream { get; set; }
         [JsonIgnore]
@@ -73,8 +81,10 @@ namespace SerialExpress.Model
             TokenTypeList = new ObservableCollection<TokenType>();
             TempStream = new MemoryStream();
 
-            ViewSource = new CollectionViewSource();
-            ViewSource.Source = DataList;
+            ViewSource = new CollectionViewSource
+            {
+                Source = DataList
+            };
 
             TokenDict = new Dictionary<TokenType, string>()
             {
@@ -87,7 +97,7 @@ namespace SerialExpress.Model
             {
                 TokenTypeList.Add(e);
             }
-            RaisePropertyChanged("TokenTypeList");
+            RaisePropertyChanged(nameof(TokenTypeList));
         }
         public void Write(byte[] data)
         {
@@ -134,29 +144,42 @@ namespace SerialExpress.Model
                 sw.WriteLine(item.ToString());
                 sw.Flush();
             }
-            RaisePropertyChanged("DataList");
+            RaisePropertyChanged(nameof(DataList));
         }
         public void PortStatusChanged(System.IO.Ports.SerialPort serial_port)
         {
             string open_port_message = serial_port.PortName + (serial_port.IsOpen ? " is opened" : " is closed");
             AppendToDataList(new TerminalDataItem(open_port_message));
 
-            if(!serial_port.IsOpen)
+            if(serial_port.IsOpen)
+            {
+                if(TextFilePath != null && TextFilePath != string.Empty)
+                {
+                    TextFileStream = new FileStream(TextFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                }
+                if (BinFilePath != null && BinFilePath != string.Empty)
+                {
+                    BinFileStream = new FileStream(BinFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                }
+            }
+            else
             { 
                 if (TextFileStream != null)
                 {
                     TextFileStream.Close();
+                    TextFileStream = null;
                 }
                 if(BinFileStream != null)
                 {
                     BinFileStream.Close();
+                    BinFileStream = null;
                 }
             }
         }
         public void Clear()
         {
             DataList.Clear();
-            RaisePropertyChanged("DataList");
+            RaisePropertyChanged(nameof(DataList));
         }
     }
 }

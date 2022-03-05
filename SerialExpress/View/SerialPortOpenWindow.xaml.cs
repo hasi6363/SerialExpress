@@ -28,12 +28,12 @@ namespace SerialExpress.View
             this.DataContext = new SerialPortOpenWindowViewModel(serial_port_manager, tx_term_manager, rx_term_manager);
         }
         private void Open_Executed(object sender, ExecutedRoutedEventArgs e)
+        
         {
-            var vm = this.DataContext as SerialPortOpenWindowViewModel;
-            if (vm != null)
+            if (DataContext is SerialPortOpenWindowViewModel vm)
             {
                 vm.SerialPortManager.OpenCommand.Execute(vm.SerialPortManager);
-                if(vm.SerialPortManager.IsOpened)
+                if (vm.SerialPortManager.IsOpened)
                 {
                     this.DialogResult = true;
                     this.Close();

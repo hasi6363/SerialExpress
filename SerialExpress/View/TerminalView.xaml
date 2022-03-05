@@ -62,7 +62,7 @@
         <GridSplitter
             Grid.Row="1"
             Height="4"
-            VerticalAlignment="Stretch" />
+            HorizontalAlignment="Stretch" />
         <Grid
             Name="TxTerminalFrame"
             Grid.Row="2">

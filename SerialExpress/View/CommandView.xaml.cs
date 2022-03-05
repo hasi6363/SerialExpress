@@ -25,8 +25,9 @@ namespace SerialExpress.View
     public partial class CommandView : UserControl
     {
         private static readonly int ClickTimerThreshold = 500;
-        private MouseClickManager MouseClickManager;
+        private readonly MouseClickManager MouseClickManager;
         private CommandItem? FirstClickItem = null;
+        private bool CancelSend = false;
         public CommandView()
         {
             InitializeComponent();
@@ -35,7 +36,17 @@ namespace SerialExpress.View
                 MaxCount = 2
             };
         }
-
+        private void SendItemCommand(CommandItem ci)
+        {
+            if (CancelSend == false)
+            {
+                ci.Send();
+            }
+            else
+            {
+                CancelSend = false;
+            }
+        }
         private void MouseClickedEvent(object? sender, object? parameter, int click_count, TimeSpan last_elapsed_time)
         {
             if(sender != null)
@@ -67,7 +78,7 @@ namespace SerialExpress.View
                                 var item = (CommandItem)lvi.Content;
                                 if (item != null && !item.CommandIsEditable && !item.DescriptionIsEditable)
                                 {
-                                    item.Send();
+                                    SendItemCommand(item);
                                 }
                             }
                             break;
@@ -87,14 +98,11 @@ namespace SerialExpress.View
         {
             if(e.Key==Key.Enter)
             {
-                var vm = DataContext as MainWindowViewModel;
-                var lv = sender as ListView;
-                if(vm != null && lv != null)
+                if (sender is ListView lv)
                 {
-                    CommandItem? item = lv.SelectedItem as CommandItem;
-                    if (item != null)
+                    if (lv.SelectedItem is CommandItem item)
                     {
-                        vm.SendCommand.Execute(item.Command);
+                        SendItemCommand(item);
                     }
                 }
             }
@@ -127,9 +135,9 @@ namespace SerialExpress.View
         /// <param name="e"></param>
         private void CommandListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender != null && sender is ListView)
+            if (sender != null && sender is ListView view)
             {
-                var lv = (ListView)sender;
+                var lv = view;
                 lv.SelectedItem = null;
             }
         }
@@ -153,6 +161,28 @@ namespace SerialExpress.View
                 else if (tb.Name is "DescriptionTextBox")
                 {
                     ci.DescriptionIsEditable = false;
+                }
+            }
+        }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox tb && tb.DataContext is CommandItem ci)
+            {
+                if (e.Key == Key.Enter || e.Key == Key.Escape)
+                {
+                    if (tb.Name == "CommandTextBox")
+                    {
+                        ci.CommandIsEditable = false;
+                    }
+                    else if (tb.Name is "DescriptionTextBox")
+                    {
+                        ci.DescriptionIsEditable = false;
+                    }
+                    if (e.Key == Key.Enter)
+                    {
+                        CancelSend = true;
+                    }
                 }
             }
         }

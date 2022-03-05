@@ -30,8 +30,7 @@ namespace SerialExpress.View
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var vm = this.DataContext as MainWindowViewModel;
-            if (vm != null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.ShowSerialPortOpenDialog();
             }
@@ -53,8 +52,7 @@ namespace SerialExpress.View
         }
         private void Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var vm = DataContext as MainWindowViewModel;
-            if (vm != null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.ShowSerialPortOpenDialog();
             }
@@ -66,8 +64,7 @@ namespace SerialExpress.View
         }
         private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var vm = DataContext as MainWindowViewModel;
-            if(vm!= null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.Save();
             }
@@ -79,8 +76,7 @@ namespace SerialExpress.View
         }
         private void SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var vm = DataContext as MainWindowViewModel;
-            if (vm != null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.SaveAs();
             }
@@ -92,8 +88,7 @@ namespace SerialExpress.View
         }
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var vm = DataContext as MainWindowViewModel;
-            if (vm != null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.StoreConfigurations();
             }
@@ -108,7 +103,7 @@ namespace SerialExpress.View
         {
             if(sender is MainWindow mw)
             {
-                StringBuilder sb = new StringBuilder(0x1000);
+                var sb = new StringBuilder(0x1000);
                 ListView lv;
                 if(mw.TerminalView.TxTerminalListView.IsKeyboardFocusWithin)
                 {
@@ -152,8 +147,7 @@ namespace SerialExpress.View
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            var vm = DataContext as MainWindowViewModel;
-            if (vm != null)
+            if (DataContext is MainWindowViewModel vm)
             {
                 vm.Save();
             }
