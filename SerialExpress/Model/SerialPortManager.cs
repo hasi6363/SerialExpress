@@ -197,10 +197,7 @@ namespace SerialExpress.Model
                         SelectedPortName = new PortNameType("","");
                     }
 
-                    if (PortStatusChangedCallback != null)
-                    {
-                        PortStatusChangedCallback(SerialPort);
-                    }
+                    PortStatusChangedCallback?.Invoke(SerialPort);
                     RaisePropertyChanged(nameof(IsOpened));
                     RaisePropertyChanged(nameof(IsClosed));
                 },
@@ -228,8 +225,8 @@ namespace SerialExpress.Model
         }
         public static PortNameType[] GetConnectedDeviceNames()
         {
-            ManagementClass pnp_entry = new ManagementClass("Win32_PnPEntity");
-            ManagementObjectCollection obj_list = pnp_entry.GetInstances();
+            var pnp_entry = new ManagementClass("Win32_PnPEntity");
+            var obj_list = pnp_entry.GetInstances();
 
             var dev_name_list = new List<PortNameType>();
             var check = new Regex("(COM[1-9][0-9]?[0-9]?)");
@@ -243,7 +240,7 @@ namespace SerialExpress.Model
                     if (dev_name != null && check.IsMatch(dev_name))
                     {
                         string com_name = check.Match(dev_name).Value;
-                        PortNameType port_name = new PortNameType(com_name, dev_name);
+                        var port_name = new PortNameType(com_name, dev_name);
                         dev_name_list.Add(port_name);
                     }
                 }

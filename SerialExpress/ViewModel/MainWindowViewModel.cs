@@ -115,7 +115,7 @@ namespace SerialExpress.ViewModel
             }
         }
 
-        private DispatcherTimer m_DataReceivedTimer;
+        private readonly DispatcherTimer m_DataReceivedTimer;
 
         public MainWindowViewModel()
         {
@@ -142,9 +142,7 @@ namespace SerialExpress.ViewModel
             SendCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
-                    if (!(parameter is string)) throw new ArgumentException();
-                    string? command = parameter as string;
-                    if(command is null) throw new ArgumentException();
+                    if (parameter is not string command) throw new ArgumentException($"parameter is not string, parameter:{parameter}");
                     InputText = command;
                     byte[] data_src = StringToBytesConverter.Convert(command);
                     TxTerminalManager.Send(data_src);
@@ -199,7 +197,7 @@ namespace SerialExpress.ViewModel
                 byte[] data = new byte[SerialPortManager.SerialPort.BytesToRead];
                 SerialPortManager.SerialPort.Read(data, 0, data.Length);
                 RxTerminalManager.Write(data);
-                RaisePropertyChanged("ReceivedTempData");
+                RaisePropertyChanged(nameof(ReceivedTempData));
                 m_DataReceivedTimer.IsEnabled = false;
             }
         }

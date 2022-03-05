@@ -26,13 +26,12 @@ namespace SerialExpress.View
         }
         private void TerminalListView_TargetUpdated(object sender, DataTransferEventArgs e)
         {
-            var lv = sender as ListView;
-            if (lv != null && lv.Items.Count != 0)
+            if (sender is ListView lv && lv.Items.Count != 0)
             {
                 if (lv.SelectedIndex >= lv.Items.Count - 3)
                 {
                     lv.SelectedIndex = lv.Items.Count - 1;
-                    lv.ScrollIntoView(lv.Items[lv.Items.Count - 1]);
+                    lv.ScrollIntoView(lv.Items[^1]);
                 }
             }
         }

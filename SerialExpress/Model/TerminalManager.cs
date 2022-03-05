@@ -28,7 +28,7 @@ namespace SerialExpress.Model
         {
             Time = DateTime.Now;
             Text = message;
-            Data = new byte[0];
+            Data = Array.Empty<byte>();
             IsMessage = true;
         }
         public override string ToString()
@@ -81,8 +81,10 @@ namespace SerialExpress.Model
             TokenTypeList = new ObservableCollection<TokenType>();
             TempStream = new MemoryStream();
 
-            ViewSource = new CollectionViewSource();
-            ViewSource.Source = DataList;
+            ViewSource = new CollectionViewSource
+            {
+                Source = DataList
+            };
 
             TokenDict = new Dictionary<TokenType, string>()
             {
@@ -95,7 +97,7 @@ namespace SerialExpress.Model
             {
                 TokenTypeList.Add(e);
             }
-            RaisePropertyChanged("TokenTypeList");
+            RaisePropertyChanged(nameof(TokenTypeList));
         }
         public void Write(byte[] data)
         {
@@ -142,7 +144,7 @@ namespace SerialExpress.Model
                 sw.WriteLine(item.ToString());
                 sw.Flush();
             }
-            RaisePropertyChanged("DataList");
+            RaisePropertyChanged(nameof(DataList));
         }
         public void PortStatusChanged(System.IO.Ports.SerialPort serial_port)
         {
@@ -177,7 +179,7 @@ namespace SerialExpress.Model
         public void Clear()
         {
             DataList.Clear();
-            RaisePropertyChanged("DataList");
+            RaisePropertyChanged(nameof(DataList));
         }
     }
 }

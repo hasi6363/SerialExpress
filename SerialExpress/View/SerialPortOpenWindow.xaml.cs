@@ -30,11 +30,10 @@ namespace SerialExpress.View
         private void Open_Executed(object sender, ExecutedRoutedEventArgs e)
         
         {
-            var vm = this.DataContext as SerialPortOpenWindowViewModel;
-            if (vm != null)
+            if (DataContext is SerialPortOpenWindowViewModel vm)
             {
                 vm.SerialPortManager.OpenCommand.Execute(vm.SerialPortManager);
-                if(vm.SerialPortManager.IsOpened)
+                if (vm.SerialPortManager.IsOpened)
                 {
                     this.DialogResult = true;
                     this.Close();

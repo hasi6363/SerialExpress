@@ -15,7 +15,7 @@ namespace SerialExpress.Converter
     {
         public static byte[] Convert(string value)
         {
-            List<byte> bytes = new List<byte>();
+            var bytes = new List<byte>();
             for (int i = 0; i < value.Length; ++i)
             {
                 if (value[i] == 0x5c || value[i] == 0xa5)
@@ -56,9 +56,9 @@ namespace SerialExpress.Converter
             }
             return bytes.ToArray();
         }
-        public string ConvertBack(byte[] value)
+        public static string ConvertBack(byte[] value)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             for (int i=0;i<value.Length ;++i )
             {
                 int data = value[i];
@@ -96,13 +96,13 @@ namespace SerialExpress.Converter
         }
         public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is null || value is not string) throw new ArgumentException();
+            if (value is null || value is not string) throw new ArgumentException($"value is null or not string, value:{value}");
             return Convert((string)value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not byte[]) throw new ArgumentException();
+            if (value is not byte[]) throw new ArgumentException($"value is not byte[], value:{value}");
             return ConvertBack((byte[])value);
         }
     }
@@ -110,7 +110,7 @@ namespace SerialExpress.Converter
     {
         public static string Convert(byte[] value)
         {
-            StringBuilder sb = new StringBuilder(0x100);
+            var sb = new StringBuilder(0x100);
 
             for (int i=0;i<value.Length ;++i )
             {
@@ -133,8 +133,8 @@ namespace SerialExpress.Converter
         }
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not byte[]) throw new ArgumentException();
-            if (parameter is not string) throw new ArgumentException();
+            if (value is not byte[]) throw new ArgumentException($"value is not byte[], value:{value}");
+            if (parameter is not string) throw new ArgumentException($"parameter is not string, parameter:{parameter}");
             return Convert((byte[])value);
         }
 
@@ -151,7 +151,7 @@ namespace SerialExpress.Converter
         }
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is null || value is not byte[]) throw new ArgumentException();
+            if (value is null || value is not byte[]) throw new ArgumentException($"value is null or not byte[], value:{value}");
             return Convert((byte[])value);
         }
 

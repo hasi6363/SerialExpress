@@ -53,7 +53,7 @@ namespace SerialExpress.Model
             // if current position is out of range, add new buffer and it is current.
             if (mIndex == Buffer.Count)
             {
-                if (Buffer.Count == 0 || Buffer[Buffer.Count - 1] != "")
+                if (Buffer.Count == 0 || Buffer[^1] != "")
                 {
                     Buffer.Add("");
                 }

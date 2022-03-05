@@ -192,7 +192,7 @@ namespace SerialExpress.Model
         public ObservableCollection<FileTreeItem>? CommandFileTreeRoot { get; private set; } = null;
         [JsonIgnore]
         public ObservableCollection<CommandItem> CommandList { get;private set; }
-        private FileSystemWatcher mFileSystemWatcher;
+        private readonly FileSystemWatcher mFileSystemWatcher;
         private bool mUseCommandPrefix = false;
         private string mCommandPrefix = "";
         private bool mUseCommandSuffix = false;
@@ -326,8 +326,7 @@ namespace SerialExpress.Model
                     }
                     else
                     {
-                        FileTreeItem? item = parameter as FileTreeItem;
-                        if (item != null)
+                        if (parameter is FileTreeItem item)
                         {
                             var dir = item.Info.Directory;
                             if (dir != null)
@@ -389,8 +388,7 @@ namespace SerialExpress.Model
                 (object? parameter) =>
                 {
                     if (parameter is not CommandItem) return;
-                    var item = parameter as CommandItem;
-                    if (item != null)
+                    if (parameter is CommandItem item)
                     {
                         SendCommandFunc(item);
                     }
@@ -400,13 +398,15 @@ namespace SerialExpress.Model
                     return true;
                 });
 
-            mFileSystemWatcher = new FileSystemWatcher();
-            mFileSystemWatcher.Path = Properties.Resources.CommandDirName;
-            mFileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess
+            mFileSystemWatcher = new FileSystemWatcher
+            {
+                Path = Properties.Resources.CommandDirName,
+                NotifyFilter = NotifyFilters.LastAccess
                                             | NotifyFilters.LastWrite
                                             | NotifyFilters.FileName
-                                            | NotifyFilters.DirectoryName;
-            mFileSystemWatcher.Filter = "*"; 
+                                            | NotifyFilters.DirectoryName,
+                Filter = "*"
+            };
             mFileSystemWatcher.Changed += new FileSystemEventHandler(FileSystemWatcher_Changed);
             mFileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Changed);
             mFileSystemWatcher.Deleted += new FileSystemEventHandler(FileSystemWatcher_Changed);
@@ -416,10 +416,7 @@ namespace SerialExpress.Model
         }
         private void SendCommandFunc(CommandItem item)
         {
-            if (SendCommandEvent != null)
-            {
-                SendCommandEvent((UseCommandPrefix ? CommandPrefix : "") + item.Command + (UseCommandSuffix ? CommandSuffix : ""));
-            }
+            SendCommandEvent?.Invoke((UseCommandPrefix ? CommandPrefix : "") + item.Command + (UseCommandSuffix ? CommandSuffix : ""));
         }
         private void FileSystemWatcher_Changed(object source, FileSystemEventArgs e)
         {
@@ -474,21 +471,19 @@ namespace SerialExpress.Model
             CommandList.Clear();
             try
             {
-                using (var sr = new StreamReader(path, Encoding.UTF8))
+                using var sr = new StreamReader(path, Encoding.UTF8);
+                while (!sr.EndOfStream)
                 {
-                    while (!sr.EndOfStream)
+                    var text = sr.ReadLine()?.Split('\t');
+                    if (text != null)
                     {
-                        var text = sr.ReadLine()?.Split('\t');
-                        if (text != null)
+                        if (text.Length > 1)
                         {
-                            if (text.Length > 1)
-                            {
-                                AddCommandItemFunc(text[0], text[1]);
-                            }
-                            else
-                            {
-                                AddCommandItemFunc(text[0], "");
-                            }
+                            AddCommandItemFunc(text[0], text[1]);
+                        }
+                        else
+                        {
+                            AddCommandItemFunc(text[0], "");
                         }
                     }
                 }

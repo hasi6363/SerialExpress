@@ -25,7 +25,7 @@ namespace SerialExpress.View
     public partial class CommandView : UserControl
     {
         private static readonly int ClickTimerThreshold = 500;
-        private MouseClickManager MouseClickManager;
+        private readonly MouseClickManager MouseClickManager;
         private CommandItem? FirstClickItem = null;
         private bool CancelSend = false;
         public CommandView()
@@ -98,12 +98,9 @@ namespace SerialExpress.View
         {
             if(e.Key==Key.Enter)
             {
-                var vm = DataContext as MainWindowViewModel;
-                var lv = sender as ListView;
-                if(vm != null && lv != null)
+                if (sender is ListView lv)
                 {
-                    CommandItem? item = lv.SelectedItem as CommandItem;
-                    if (item != null)
+                    if (lv.SelectedItem is CommandItem item)
                     {
                         SendItemCommand(item);
                     }
@@ -138,9 +135,9 @@ namespace SerialExpress.View
         /// <param name="e"></param>
         private void CommandListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender != null && sender is ListView)
+            if (sender != null && sender is ListView view)
             {
-                var lv = (ListView)sender;
+                var lv = view;
                 lv.SelectedItem = null;
             }
         }

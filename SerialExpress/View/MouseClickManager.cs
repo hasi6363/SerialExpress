@@ -29,7 +29,7 @@ namespace SerialExpress.View
             private int ClickCount;
             public object SenderObject { get; }
             public object? Parameter { get; set; }
-            private MouseClickedEventDelegate mTimerTickEvent;
+            private readonly MouseClickedEventDelegate mTimerTickEvent;
             public MouseClickObject(object sender, TimeSpan interval, MouseClickedEventDelegate event_handler, Dispatcher dispatcher)
             {
                 SenderObject = sender;
@@ -60,10 +60,7 @@ namespace SerialExpress.View
             private void Timer_Tick(object? sender, EventArgs e)
             {
                 Timer.Stop();
-                if (mTimerTickEvent != null)
-                {
-                    mTimerTickEvent(SenderObject, Parameter, ClickCount, LastElapsedTime);
-                }
+                mTimerTickEvent?.Invoke(SenderObject, Parameter, ClickCount, LastElapsedTime);
                 mStopWatch.Stop();
                 ClickCount = 0;
             }
@@ -102,8 +99,10 @@ namespace SerialExpress.View
             var obj = MouseClickObjectList.Find((MouseClickObject obj) => obj.SenderObject == sender);
             if (obj == null)
             {
-                obj = new MouseClickObject(sender, Interval, MouseClickedEvent, Dispatcher);
-                obj.MaxCount = mMaxCount;
+                obj = new MouseClickObject(sender, Interval, MouseClickedEvent, Dispatcher)
+                {
+                    MaxCount = mMaxCount
+                };
                 MouseClickObjectList.Add(obj);
                 obj.Parameter = parameter;
                 obj.UpdateClickCount();
