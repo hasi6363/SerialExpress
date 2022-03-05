@@ -33,7 +33,11 @@ namespace SerialExpress.Model
         }
         public override string ToString()
         {
-            return "[" + Time.ToString("HH:mm:ss.fff") + "]\t" + Text;
+            return Text;
+        }
+        public string ToString(bool with_time)
+        {
+            return (with_time ? "[" + Time.ToString("HH:mm:ss.fff") + "]\t" : "") + Text;
         }
     }
     public class TerminalManager:BindableBase
