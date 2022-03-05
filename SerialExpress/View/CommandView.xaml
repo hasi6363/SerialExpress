@@ -83,7 +83,7 @@
             <GridSplitter
                 Grid.Row="1"
                 Height="4"
-                VerticalAlignment="Stretch" />
+                HorizontalAlignment="Stretch" />
             <Grid
                 Grid.Row="2">
                 <Grid.ColumnDefinitions>
