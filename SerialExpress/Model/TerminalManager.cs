@@ -56,7 +56,11 @@ namespace SerialExpress.Model
         [JsonIgnore]
         public Dictionary<TokenType, string> TokenDict { get; }
         [JsonIgnore]
+        public string? BinFilePath { get; set; } = null;
+        [JsonIgnore]
         public FileStream? BinFileStream { get; set; }
+        [JsonIgnore]
+        public string? TextFilePath { get; set; } = null;
         [JsonIgnore]
         public FileStream? TextFileStream { get; set; }
         [JsonIgnore]
@@ -145,15 +149,28 @@ namespace SerialExpress.Model
             string open_port_message = serial_port.PortName + (serial_port.IsOpen ? " is opened" : " is closed");
             AppendToDataList(new TerminalDataItem(open_port_message));
 
-            if(!serial_port.IsOpen)
+            if(serial_port.IsOpen)
+            {
+                if(TextFilePath != null && TextFilePath != string.Empty)
+                {
+                    TextFileStream = new FileStream(TextFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                }
+                if (BinFilePath != null && BinFilePath != string.Empty)
+                {
+                    BinFileStream = new FileStream(BinFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                }
+            }
+            else
             { 
                 if (TextFileStream != null)
                 {
                     TextFileStream.Close();
+                    TextFileStream = null;
                 }
                 if(BinFileStream != null)
                 {
                     BinFileStream.Close();
+                    BinFileStream = null;
                 }
             }
         }

@@ -66,7 +66,7 @@
                             Grid.Column="1"
                             Name="SerialPort_ComboBox"
                             IsEditable="True"
-                            ItemsSource="{Binding Path=SerialPortManager.PortNameList, Mode=OneWay}"
+                            ItemsSource="{Binding Path=SerialPortManager.PortNameList}"
                             SelectedItem="{Binding Path=SerialPortManager.SelectedPortName}">
                             <b:Interaction.Triggers>
                                 <b:EventTrigger

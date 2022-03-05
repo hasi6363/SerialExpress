@@ -48,12 +48,7 @@ namespace SerialExpress.Model
         public ObservableCollection<StopBits> StopBitsList { get; }
         public delegate void PortStatusChangedCallbackDelegete(SerialPort serial_port);
         public event PortStatusChangedCallbackDelegete? PortStatusChangedCallback = null;
-        
-        [JsonIgnore]
-        public string PortName
-        {
-            get { return SerialPort.PortName; }
-        }
+
         private PortNameType mSelectedPortName;
         [JsonIgnore]
         public PortNameType SelectedPortName
@@ -193,7 +188,6 @@ namespace SerialExpress.Model
                         {
                             SerialPort.Close();
                             NextAction = NextActionEnum.Open;
-                            SelectedPortName = new PortNameType("","");
                         }
                     }
                     catch 
@@ -218,7 +212,9 @@ namespace SerialExpress.Model
                 (object? parameter) =>
                 {
                     PortNameType[] port_list = GetConnectedDeviceNames();
+                    
                     PortNameList.Clear();
+                    PortNameList.Add(new PortNameType("", ""));
                     foreach (PortNameType s in port_list)
                     {
                         PortNameList.Add(s);
