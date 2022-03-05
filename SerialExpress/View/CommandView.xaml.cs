@@ -27,6 +27,7 @@ namespace SerialExpress.View
         private static readonly int ClickTimerThreshold = 500;
         private MouseClickManager MouseClickManager;
         private CommandItem? FirstClickItem = null;
+        private bool CancelSend = false;
         public CommandView()
         {
             InitializeComponent();
@@ -35,7 +36,17 @@ namespace SerialExpress.View
                 MaxCount = 2
             };
         }
-
+        private void SendItemCommand(CommandItem ci)
+        {
+            if (CancelSend == false)
+            {
+                ci.Send();
+            }
+            else
+            {
+                CancelSend = false;
+            }
+        }
         private void MouseClickedEvent(object? sender, object? parameter, int click_count, TimeSpan last_elapsed_time)
         {
             if(sender != null)
@@ -67,7 +78,7 @@ namespace SerialExpress.View
                                 var item = (CommandItem)lvi.Content;
                                 if (item != null && !item.CommandIsEditable && !item.DescriptionIsEditable)
                                 {
-                                    item.Send();
+                                    SendItemCommand(item);
                                 }
                             }
                             break;
@@ -94,7 +105,7 @@ namespace SerialExpress.View
                     CommandItem? item = lv.SelectedItem as CommandItem;
                     if (item != null)
                     {
-                        vm.SendCommand.Execute(item.Command);
+                        SendItemCommand(item);
                     }
                 }
             }
@@ -153,6 +164,28 @@ namespace SerialExpress.View
                 else if (tb.Name is "DescriptionTextBox")
                 {
                     ci.DescriptionIsEditable = false;
+                }
+            }
+        }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox tb && tb.DataContext is CommandItem ci)
+            {
+                if (e.Key == Key.Enter || e.Key == Key.Escape)
+                {
+                    if (tb.Name == "CommandTextBox")
+                    {
+                        ci.CommandIsEditable = false;
+                    }
+                    else if (tb.Name is "DescriptionTextBox")
+                    {
+                        ci.DescriptionIsEditable = false;
+                    }
+                    if (e.Key == Key.Enter)
+                    {
+                        CancelSend = true;
+                    }
                 }
             }
         }
