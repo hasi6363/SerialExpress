@@ -91,7 +91,7 @@ namespace SerialExpress.Model
                     {
                         Buffer.Add((string)s);
                     }
-                } while (s == null);
+                } while (s != null);
             }
         }
     }

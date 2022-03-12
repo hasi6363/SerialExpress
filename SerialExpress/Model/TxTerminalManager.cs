@@ -32,10 +32,7 @@ namespace SerialExpress.Model
                 data = data_src;
             }
             Write(data);
-            if (SendEvent != null)
-            {
-                SendEvent(data);
-            }
+            SendEvent?.Invoke(data);
         }
     }
 }

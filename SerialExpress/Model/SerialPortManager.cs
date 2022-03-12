@@ -35,7 +35,7 @@ namespace SerialExpress.Model
             }
         }
         [JsonIgnore]
-        public SerialPort SerialPort { get; }
+        private SerialPort SerialPort { get; }
         [JsonIgnore]
         public ObservableCollection<PortNameType> PortNameList { get; }
         [JsonIgnore]
@@ -46,8 +46,20 @@ namespace SerialExpress.Model
         public ObservableCollection<Parity> ParityList { get; }
         [JsonIgnore]
         public ObservableCollection<StopBits> StopBitsList { get; }
+        [JsonIgnore]
+        public int BytesToRead
+        {
+            get
+            {
+                return SerialPort.BytesToRead;
+            }
+        }
         public delegate void PortStatusChangedCallbackDelegete(SerialPort serial_port);
         public event PortStatusChangedCallbackDelegete? PortStatusChangedCallback = null;
+        public delegate void DataReceivedDelegate(object sender, SerialDataReceivedEventArgs e);
+        public event DataReceivedDelegate? DataReceived = null;
+        public delegate void ErrorReceivedDelegate(object sender, SerialErrorReceivedEventArgs e);
+        public event ErrorReceivedDelegate? ErrorReceived = null;
 
         private PortNameType mSelectedPortName;
         [JsonIgnore]
@@ -170,6 +182,9 @@ namespace SerialExpress.Model
             SerialPort.WriteBufferSize = 0x10;
             SerialPort.WriteTimeout = 1000;
             SerialPort.DtrEnable = true;
+            SerialPort.DataReceived += SerialPort_DataReceived;
+            SerialPort.ErrorReceived += SerialPort_ErrorReceived;
+
             OpenCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
@@ -223,6 +238,19 @@ namespace SerialExpress.Model
                     return true;
                 });
         }
+
+        private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            RaisePropertyChanged(nameof(IsOpened));
+            RaisePropertyChanged(nameof(IsClosed));
+            ErrorReceived?.Invoke(sender, e);
+        }
+
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            DataReceived?.Invoke(sender, e);
+        }
+
         public static PortNameType[] GetConnectedDeviceNames()
         {
             var pnp_entry = new ManagementClass("Win32_PnPEntity");
@@ -254,6 +282,10 @@ namespace SerialExpress.Model
         public override string ToString()
         {
             return $"PortName:\"{SelectedPortName}\" BaudRate:{BaudRate} DataBits:{DataBits} Parity:{Parity} StopBits:{StopBits}";
+        }
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            return SerialPort.Read(buffer, offset, count);
         }
     }
 }
