@@ -129,7 +129,7 @@ namespace SerialExpress.ViewModel
             SerialPortManager.PortStatusChangedCallback += SerialPort_PortStatusChanged;
             SerialPortManager.PortStatusChangedCallback += RxTerminalManager.PortStatusChanged;
             SerialPortManager.PortStatusChangedCallback += TxTerminalManager.PortStatusChanged;
-            SerialPortManager.SerialPort.DataReceived += SerialPort_DataReceived;
+            SerialPortManager.DataReceived += SerialPort_DataReceived;
             TxTerminalManager.SendEvent += SerialPortManager.Send;
             CommandManager.SendCommandEvent += SendCommandEvent;
 
@@ -192,10 +192,10 @@ namespace SerialExpress.ViewModel
 
         private void DataReceivedTimer_Tick(object? sender, EventArgs e)
         {
-            if (SerialPortManager.SerialPort.IsOpen)
+            if (SerialPortManager.IsOpened)
             {
-                byte[] data = new byte[SerialPortManager.SerialPort.BytesToRead];
-                SerialPortManager.SerialPort.Read(data, 0, data.Length);
+                byte[] data = new byte[SerialPortManager.BytesToRead];
+                SerialPortManager.Read(data, 0, data.Length);
                 RxTerminalManager.Write(data);
                 RaisePropertyChanged(nameof(ReceivedTempData));
                 m_DataReceivedTimer.IsEnabled = false;
