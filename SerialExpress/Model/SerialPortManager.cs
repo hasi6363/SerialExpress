@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace SerialExpress.Model
 {
@@ -54,6 +55,9 @@ namespace SerialExpress.Model
                 return SerialPort.BytesToRead;
             }
         }
+        [JsonIgnore]
+        private DispatcherTimer PortCheckTimer;
+
         public delegate void PortStatusChangedCallbackDelegete(SerialPort serial_port);
         public event PortStatusChangedCallbackDelegete? PortStatusChangedCallback = null;
         public delegate void DataReceivedDelegate(object sender, SerialDataReceivedEventArgs e);
@@ -185,6 +189,15 @@ namespace SerialExpress.Model
             SerialPort.DataReceived += SerialPort_DataReceived;
             SerialPort.ErrorReceived += SerialPort_ErrorReceived;
 
+            PortCheckTimer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            PortCheckTimer.Tick += (object? sender, EventArgs e) =>
+            {
+                PortStatusChanged();
+            };
+
             OpenCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
@@ -212,9 +225,7 @@ namespace SerialExpress.Model
                         SelectedPortName = new PortNameType("","");
                     }
 
-                    PortStatusChangedCallback?.Invoke(SerialPort);
-                    RaisePropertyChanged(nameof(IsOpened));
-                    RaisePropertyChanged(nameof(IsClosed));
+                    PortStatusChanged();
                 },
                 () =>
                 {
@@ -238,11 +249,27 @@ namespace SerialExpress.Model
                     return true;
                 });
         }
+        private void PortStatusChanged()
+        {
+            if (SerialPort.IsOpen != IsOpened)
+            {
+                RaisePropertyChanged(nameof(IsOpened));
+                RaisePropertyChanged(nameof(IsClosed));
+                if(IsOpened)
+                {
+                    PortCheckTimer.Start();
+                }
+                else
+                {
+                    PortCheckTimer.Stop();
+                }
+                PortStatusChangedCallback?.Invoke(SerialPort);
+            }
+        }
 
         private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            RaisePropertyChanged(nameof(IsOpened));
-            RaisePropertyChanged(nameof(IsClosed));
+            PortStatusChanged();
             ErrorReceived?.Invoke(sender, e);
         }
 
