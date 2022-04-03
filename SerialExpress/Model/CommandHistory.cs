@@ -93,6 +93,10 @@ namespace SerialExpress.Model
                     }
                 } while (s != null);
             }
+            if (Buffer.Count > 0)
+            {
+                mIndex = Buffer.Count - 1;
+            }
         }
     }
 }
