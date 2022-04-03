@@ -304,7 +304,14 @@ namespace SerialExpress.Model
         }
         public void Send(byte[] data)
         {
-            SerialPort.Write(data, 0, data.Length);
+            try
+            {
+                SerialPort.Write(data, 0, data.Length);
+            }
+            catch
+            {
+                PortStatusChanged();
+            }
         }
         public override string ToString()
         {
@@ -312,7 +319,15 @@ namespace SerialExpress.Model
         }
         public int Read(byte[] buffer, int offset, int count)
         {
-            return SerialPort.Read(buffer, offset, count);
+            try
+            {
+                return SerialPort.Read(buffer, offset, count);
+            }
+            catch
+            {
+                PortStatusChanged();
+                return 0;
+            }
         }
     }
 }
