@@ -258,6 +258,7 @@ namespace SerialExpress.Model
                 mIsOpened = SerialPort.IsOpen;
                 RaisePropertyChanged(nameof(IsOpened));
                 RaisePropertyChanged(nameof(IsClosed));
+                RaisePropertyChanged(nameof(NextAction));
                 if(IsOpened)
                 {
                     PortCheckTimer.Start();
