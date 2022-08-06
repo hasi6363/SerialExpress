@@ -120,6 +120,13 @@ namespace SerialExpress.Model
         public bool IsOpened
         {
             get { return mIsOpened; }
+            set
+            {
+                mIsOpened = value;
+                RaisePropertyChanged(nameof(IsOpened));
+                RaisePropertyChanged(nameof(IsClosed));
+                NextAction = mIsOpened ? NextActionEnum.Close : NextActionEnum.Open;
+            }
         }
         [JsonIgnore]
         public bool IsClosed
@@ -255,7 +262,7 @@ namespace SerialExpress.Model
         {
             if (SerialPort.IsOpen != IsOpened)
             {
-                mIsOpened = SerialPort.IsOpen;
+                IsOpened = SerialPort.IsOpen;
                 RaisePropertyChanged(nameof(IsOpened));
                 RaisePropertyChanged(nameof(IsClosed));
                 RaisePropertyChanged(nameof(NextAction));
