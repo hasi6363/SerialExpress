@@ -1,4 +1,5 @@
 ﻿<Window
+    x:Name="NameMainWindow"
     x:Class="SerialExpress.View.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -60,7 +61,10 @@
                 <MenuItem
                     Header="New"
                     Command="ApplicationCommands.New"/>
-                    <!--
+                <!--
+                <MenuItem
+                    Header="Open"
+                    Command="ApplicationCommands.Open" />
                 <MenuItem
                     Header="Save"
                     Command="ApplicationCommands.Save"/>
@@ -76,7 +80,11 @@
                 Header="Terminal">
                 <MenuItem
                     Header="Settings"
-                    Command="ApplicationCommands.Open" />
+                    Command="{Binding Path=ShowSerialPortOpenDialogCommand}"
+                    CommandParameter="{Binding ElementName=NameMainWindow}" />
+                <MenuItem
+                    Header="Close Port"
+                    Command="{Binding Path=SerialPortManager.ClosePortCommand}" />
                 <MenuItem
                     Header="Clear"
                     Command="{Binding Path=ClearTerminal}" />

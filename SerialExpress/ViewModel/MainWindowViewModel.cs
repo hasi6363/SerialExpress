@@ -27,6 +27,7 @@ namespace SerialExpress.ViewModel
         public CommandManager CommandManager { get; }
         public CommandHistory History { get; }
 
+        public DelegateCommand ShowSerialPortOpenDialogCommand { get; }
         public DelegateCommand SendCommand { get; }
         public DelegateCommand GetPrevCommand { get; }
         public DelegateCommand GetNextCommand { get; }
@@ -138,6 +139,16 @@ namespace SerialExpress.ViewModel
                 Interval = TimeSpan.FromMilliseconds(100)
             };
             m_DataReceivedTimer.Tick += DataReceivedTimer_Tick;
+            ShowSerialPortOpenDialogCommand = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    if (parameter is not Window owner) throw new ArgumentException($"parameter is not Window, parameter:{parameter}");
+                    ShowSerialPortOpenDialog(owner);
+                },
+                () =>
+                {
+                    return true;
+                });
 
             SendCommand = new DelegateCommand(
                 (object? parameter) =>
@@ -237,11 +248,12 @@ namespace SerialExpress.ViewModel
             RaisePropertyChanged(nameof(WindowTitle));
             RaisePropertyChanged(nameof(StatusBarText));
         }
-        public void ShowSerialPortOpenDialog()
+        public void ShowSerialPortOpenDialog(Window owner)
         {
             LoadConfigurations();
             History.Load();
             var spw = new SerialPortOpenWindow(SerialPortManager, TxTerminalManager, RxTerminalManager);
+            spw.Owner = owner;
             if (spw.ShowDialog() == true)
             {
                 StoreConfigurations();

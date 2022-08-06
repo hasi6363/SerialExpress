@@ -120,6 +120,13 @@ namespace SerialExpress.Model
         public bool IsOpened
         {
             get { return mIsOpened; }
+            set
+            {
+                mIsOpened = value;
+                RaisePropertyChanged(nameof(IsOpened));
+                RaisePropertyChanged(nameof(IsClosed));
+                NextAction = mIsOpened ? NextActionEnum.Close : NextActionEnum.Open;
+            }
         }
         [JsonIgnore]
         public bool IsClosed
@@ -147,7 +154,11 @@ namespace SerialExpress.Model
         }
 
         [JsonIgnore]
-        public DelegateCommand OpenCommand { get; }
+        public DelegateCommand OpenPortCommand { get; }
+        [JsonIgnore]
+        public DelegateCommand ClosePortCommand { get; }
+        [JsonIgnore]
+        public DelegateCommand OpenClosePortCommand { get; }
         [JsonIgnore]
         public DelegateCommand UpdatePortNameListCommand { get; }
         public SerialPortManager()
@@ -200,7 +211,7 @@ namespace SerialExpress.Model
                 PortStatusChanged();
             };
 
-            OpenCommand = new DelegateCommand(
+            OpenPortCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
                     try
@@ -214,11 +225,6 @@ namespace SerialExpress.Model
                                 NextAction = NextActionEnum.Close;
                             }
                         }
-                        else
-                        {
-                            SerialPort.Close();
-                            NextAction = NextActionEnum.Open;
-                        }
                     }
                     catch 
                     {
@@ -231,8 +237,60 @@ namespace SerialExpress.Model
                 },
                 () =>
                 {
+                    return !SerialPort.IsOpen;
+                });
+            ClosePortCommand = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    try
+                    {
+                        if (SerialPort.IsOpen)
+                        {
+                            SerialPort.Close();
+                            NextAction = NextActionEnum.Open;
+                        }
+                    }
+                    catch
+                    {
+                        SerialPort.Close();
+                        NextAction = NextActionEnum.Open;
+                        SelectedPortName = new PortNameType("", "");
+                    }
+
+                    PortStatusChanged();
+                },
+                () =>
+                {
+                    return SerialPort.IsOpen;
+                });
+            OpenClosePortCommand = new DelegateCommand(
+                (object? parameter) =>
+                {
+                    try
+                    {
+                        if (OpenPortCommand.CanExecute(null))
+                        {
+                            OpenPortCommand.Execute(null);
+                        }
+                        else
+                        {
+                            ClosePortCommand.Execute(null);
+                        }
+                    }
+                    catch
+                    {
+                        SerialPort.Close();
+                        NextAction = NextActionEnum.Open;
+                        SelectedPortName = new PortNameType("", "");
+                    }
+
+                    PortStatusChanged();
+                },
+                () =>
+                {
                     return true;
                 });
+
             UpdatePortNameListCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
@@ -255,7 +313,7 @@ namespace SerialExpress.Model
         {
             if (SerialPort.IsOpen != IsOpened)
             {
-                mIsOpened = SerialPort.IsOpen;
+                IsOpened = SerialPort.IsOpen;
                 RaisePropertyChanged(nameof(IsOpened));
                 RaisePropertyChanged(nameof(IsClosed));
                 RaisePropertyChanged(nameof(NextAction));
