@@ -14,10 +14,6 @@
     WindowStyle="SingleBorderWindow">
     <Window.CommandBindings>
         <CommandBinding
-            Command="ApplicationCommands.Open"
-            Executed="Open_Executed"
-            CanExecute="Open_CanExecute" />
-        <CommandBinding
             Command="ApplicationCommands.Close"
             Executed="Close_Executed"
             CanExecute="Close_CanExecute" />
@@ -179,7 +175,7 @@
                 VerticalAlignment="Center"
                 Content="{Binding Path=SerialPortManager.NextAction}"
                 IsEnabled="{Binding Path=SerialPortManager.IsSelected}"
-                Command="ApplicationCommands.Open"
+                Command="{x:Static local:SerialPortOpenWindow.OpenClosePortCommand}"
                 Width="100"
                 Padding="16 0"
                 Margin="4 8" />

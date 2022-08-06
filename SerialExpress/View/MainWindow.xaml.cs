@@ -52,15 +52,12 @@ namespace SerialExpress.View
         }
         private void Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (DataContext is MainWindowViewModel vm)
-            {
-                vm.ShowSerialPortOpenDialog();
-            }
+
         }
 
         private void Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = true;
+            e.CanExecute = false;
         }
         private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -84,7 +81,7 @@ namespace SerialExpress.View
 
         private void SaveAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = true;
+            e.CanExecute = false;
         }
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {

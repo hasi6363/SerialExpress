@@ -22,30 +22,32 @@ namespace SerialExpress.View
     /// </summary>
     public partial class SerialPortOpenWindow : Window
     {
+        public static RoutedCommand OpenClosePortCommand { get; } = new RoutedCommand();
         public SerialPortOpenWindow(SerialPortManager serial_port_manager, TxTerminalManager tx_term_manager, RxTerminalManager rx_term_manager)
         {
             InitializeComponent();
             this.DataContext = new SerialPortOpenWindowViewModel(serial_port_manager, tx_term_manager, rx_term_manager);
-        }
-        private void Open_Executed(object sender, ExecutedRoutedEventArgs e)
-        
-        {
-            if (DataContext is SerialPortOpenWindowViewModel vm)
-            {
-                vm.SerialPortManager.OpenCommand.Execute(vm.SerialPortManager);
-                if (vm.SerialPortManager.IsOpened)
+            
+            CommandBindings.Add(new CommandBinding(OpenClosePortCommand,
+                (s, e) =>
                 {
-                    this.DialogResult = true;
-                    this.Close();
-                    return;
-                }
-            }
+                    if (DataContext is SerialPortOpenWindowViewModel vm)
+                    {
+                        vm.SerialPortManager.OpenClosePortCommand.Execute(vm.SerialPortManager);
+                        if (vm.SerialPortManager.IsOpened)
+                        {
+                            this.DialogResult = true;
+                            this.Close();
+                            return;
+                        }
+                    }
+                },
+                (s, e) =>
+                {
+                    e.CanExecute = true;
+                }));
         }
 
-        private void Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = true;
-        }
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             this.DialogResult = false;

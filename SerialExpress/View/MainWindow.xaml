@@ -60,7 +60,10 @@
                 <MenuItem
                     Header="New"
                     Command="ApplicationCommands.New"/>
-                    <!--
+                <!--
+                <MenuItem
+                    Header="Open"
+                    Command="ApplicationCommands.Open" />
                 <MenuItem
                     Header="Save"
                     Command="ApplicationCommands.Save"/>
@@ -76,7 +79,7 @@
                 Header="Terminal">
                 <MenuItem
                     Header="Settings"
-                    Command="ApplicationCommands.Open" />
+                    Command="{Binding Path=ShowSerialPortOpenDialogCommand}" />
                 <MenuItem
                     Header="Clear"
                     Command="{Binding Path=ClearTerminal}" />
