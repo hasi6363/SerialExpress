@@ -5,7 +5,7 @@
 		<TargetFramework>net6.0-windows</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
-		<Version>0.2.5</Version>
+		<Version>0.2.6</Version>
 		<Deterministic>false</Deterministic>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<StartupObject>SerialExpress.App</StartupObject>
