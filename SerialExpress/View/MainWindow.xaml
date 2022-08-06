@@ -81,6 +81,9 @@
                     Header="Settings"
                     Command="{Binding Path=ShowSerialPortOpenDialogCommand}" />
                 <MenuItem
+                    Header="Close Port"
+                    Command="{Binding Path=SerialPortManager.ClosePortCommand}" />
+                <MenuItem
                     Header="Clear"
                     Command="{Binding Path=ClearTerminal}" />
             </MenuItem>
