@@ -142,7 +142,8 @@ namespace SerialExpress.ViewModel
             ShowSerialPortOpenDialogCommand = new DelegateCommand(
                 (object? parameter) =>
                 {
-                    ShowSerialPortOpenDialog();
+                    if (parameter is not Window owner) throw new ArgumentException($"parameter is not Window, parameter:{parameter}");
+                    ShowSerialPortOpenDialog(owner);
                 },
                 () =>
                 {
@@ -247,11 +248,12 @@ namespace SerialExpress.ViewModel
             RaisePropertyChanged(nameof(WindowTitle));
             RaisePropertyChanged(nameof(StatusBarText));
         }
-        public void ShowSerialPortOpenDialog()
+        public void ShowSerialPortOpenDialog(Window owner)
         {
             LoadConfigurations();
             History.Load();
             var spw = new SerialPortOpenWindow(SerialPortManager, TxTerminalManager, RxTerminalManager);
+            spw.Owner = owner;
             if (spw.ShowDialog() == true)
             {
                 StoreConfigurations();

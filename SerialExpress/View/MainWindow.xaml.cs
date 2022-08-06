@@ -32,7 +32,7 @@ namespace SerialExpress.View
         {
             if (DataContext is MainWindowViewModel vm)
             {
-                vm.ShowSerialPortOpenDialog();
+                vm.ShowSerialPortOpenDialog(this);
             }
         }
         private void New_Executed(object sender, ExecutedRoutedEventArgs e)
