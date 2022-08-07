@@ -121,7 +121,7 @@ namespace SerialExpress.Converter
                     //sb.Append("[" + data.ToString("X02") + "]");
                     if (data == 0x1b && (value[i + 1] == '['))
                     {
-                        while (value[++i] != 'm') ;
+                        while (i < value.Length && value[++i] != 'm') ;
                     }
                 }
                 else
